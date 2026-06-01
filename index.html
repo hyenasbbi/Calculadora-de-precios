@@ -3,161 +3,346 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Calculadora IMPORTB2B</title>
+  <title>IMPORTB2B - Calculadora</title>
+
   <style>
-    body{font-family:Arial,sans-serif;background:#111214;color:#fff;margin:0;padding:20px}
-    h1{text-align:center}
-    .panel{background:#1a1b1e;padding:15px;border-radius:12px;margin-bottom:20px}
-    label{display:block;margin-top:10px;color:#ccc}
-    input{width:100%;padding:10px;margin-top:5px;border-radius:8px;border:none;box-sizing:border-box}
-    button{width:100%;padding:12px;margin-top:15px;border:none;border-radius:8px;background:#00c853;color:white;font-weight:bold;cursor:pointer}
-    .delete{background:#d32f2f;padding:8px;font-size:13px}
-    table{width:100%;border-collapse:collapse;background:#1a1b1e;border-radius:12px;overflow:hidden}
-    th,td{padding:10px;border-bottom:1px solid #333;text-align:center;font-size:14px}
+    *{box-sizing:border-box}
+    body{
+      font-family:Arial,sans-serif;
+      background:#111214;
+      color:#fff;
+      margin:0;
+      padding:20px;
+    }
+    h1,h2{margin-top:0}
+    .panel{
+      background:#1a1b1e;
+      padding:16px;
+      border-radius:14px;
+      margin-bottom:18px;
+    }
+    label{
+      display:block;
+      margin-top:10px;
+      color:#ccc;
+      font-size:14px;
+    }
+    input{
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      border:none;
+      margin-top:5px;
+      font-size:15px;
+    }
+    button{
+      padding:11px 14px;
+      border:none;
+      border-radius:8px;
+      font-weight:bold;
+      cursor:pointer;
+      color:white;
+      background:#00c853;
+    }
+    .delete{background:#d32f2f}
+    .tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .tab-btn{
+      background:#25262a;
+    }
+    .tab-btn.active{
+      background:#00c853;
+    }
+    .tab{display:none}
+    .tab.active{display:block}
+    .summary{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+      gap:10px;
+    }
+    .card{
+      background:#25262a;
+      padding:15px;
+      border-radius:10px;
+      text-align:center;
+    }
+    .card strong{
+      display:block;
+      margin-top:6px;
+      font-size:20px;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      background:#1a1b1e;
+      border-radius:14px;
+      overflow:hidden;
+    }
+    th,td{
+      padding:10px;
+      border-bottom:1px solid #333;
+      text-align:center;
+      font-size:14px;
+    }
     th{background:#25262a}
-    .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-    .card{background:#25262a;padding:15px;border-radius:10px;text-align:center}
-    .card strong{display:block;font-size:20px;margin-top:5px}
+    td input{
+      min-width:90px;
+      text-align:center;
+      background:#fff;
+      color:#111;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;
+    }
+    @media(max-width:768px){
+      body{padding:10px}
+      table{font-size:12px}
+      th,td{padding:7px}
+    }
   </style>
 </head>
+
 <body>
 
-<h1>Calculadora de Costos IMPORTB2B</h1>
+<h1>Calculadora IMPORTB2B</h1>
 
-<div class="panel">
-  <label>Precio del dólar del día</label>
-  <input type="number" id="dolar" value="1480" oninput="calcularTodo()">
+<div class="panel grid">
+  <div>
+    <label>Dólar del día</label>
+    <input type="number" id="dolar" value="1480" oninput="calcularTodo()">
+  </div>
 
-  <label>Margen de ganancia general (%)</label>
-  <input type="number" id="margen" value="70" oninput="calcularTodo()">
-</div>
+  <div>
+    <label>Margen minorista (%)</label>
+    <input type="number" id="margenMinorista" value="75" oninput="calcularTodo()">
+  </div>
 
-<div class="panel">
-  <h2>Cargar nuevo producto</h2>
+  <div>
+    <label>Margen mayorista 6 prendas (%)</label>
+    <input type="number" id="margen6" value="45" oninput="calcularTodo()">
+  </div>
 
-  <label>Prenda</label>
-  <input type="text" id="prenda" placeholder="Ej: Argentina manga larga">
+  <div>
+    <label>Margen mayorista 12 prendas (%)</label>
+    <input type="number" id="margen12" value="35" oninput="calcularTodo()">
+  </div>
 
-  <label>Jugador / Detalle</label>
-  <input type="text" id="detalle" placeholder="Ej: Messi">
-
-  <label>Costo real en dólares</label>
-  <input type="number" id="costoUsd" placeholder="Ej: 17.31" step="0.01">
-
-  <label>Cantidad</label>
-  <input type="number" id="cantidad" value="1">
-
-  <button onclick="agregarProducto()">Agregar producto</button>
+  <div>
+    <label>Margen mayorista 36 prendas (%)</label>
+    <input type="number" id="margen36" value="25" oninput="calcularTodo()">
+  </div>
 </div>
 
 <div class="panel summary">
   <div class="card">Stock total<strong id="stockTotal">0</strong></div>
   <div class="card">Inversión USD<strong id="totalUsd">USD 0</strong></div>
   <div class="card">Inversión ARS<strong id="totalArs">$0</strong></div>
-  <div class="card">Venta estimada<strong id="ventaTotal">$0</strong></div>
-  <div class="card">Ganancia estimada<strong id="gananciaTotal">$0</strong></div>
+  <div class="card">Venta minorista<strong id="ventaMinoristaTotal">$0</strong></div>
+  <div class="card">Ganancia minorista<strong id="gananciaMinoristaTotal">$0</strong></div>
 </div>
 
-<div class="panel">
-  <h2>Listado de productos</h2>
+<div class="tabs">
+  <button class="tab-btn active" onclick="abrirTab('gestion', this)">Gestión productos</button>
+  <button class="tab-btn" onclick="abrirTab('minorista', this)">Minorista</button>
+  <button class="tab-btn" onclick="abrirTab('mayorista6', this)">Mayorista 6</button>
+  <button class="tab-btn" onclick="abrirTab('mayorista12', this)">Mayorista 12</button>
+  <button class="tab-btn" onclick="abrirTab('mayorista36', this)">Mayorista 36</button>
+</div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Prenda</th>
-        <th>Detalle</th>
-        <th>Cant.</th>
-        <th>USD</th>
-        <th>Costo ARS</th>
-        <th>Venta sugerida</th>
-        <th>Ganancia</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody id="tablaProductos"></tbody>
-  </table>
+<div id="gestion" class="tab active">
+  <div class="panel">
+    <h2>Cargar nuevo producto</h2>
+
+    <div class="grid">
+      <div>
+        <label>Prenda</label>
+        <input type="text" id="prenda" placeholder="Ej: Argentina manga larga">
+      </div>
+
+      <div>
+        <label>Jugador / Detalle</label>
+        <input type="text" id="detalle" placeholder="Ej: Messi">
+      </div>
+
+      <div>
+        <label>Costo real USD</label>
+        <input type="number" id="costoUsd" step="0.01" placeholder="Ej: 19.96">
+      </div>
+
+      <div>
+        <label>Cantidad</label>
+        <input type="number" id="cantidad" value="1">
+      </div>
+    </div>
+
+    <button onclick="agregarProducto()">Agregar producto</button>
+    <button onclick="resetearProductos()" class="delete">Restaurar lista inicial</button>
+  </div>
+
+  <div class="panel">
+    <h2>Listado editable</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Prenda</th>
+          <th>Detalle</th>
+          <th>Cant.</th>
+          <th>USD Real</th>
+          <th>Costo ARS</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="tablaGestion"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="minorista" class="tab">
+  <div class="panel">
+    <h2>Precios sugeridos minoristas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Prenda</th>
+          <th>Detalle</th>
+          <th>Costo ARS</th>
+          <th>Precio minorista</th>
+          <th>Ganancia</th>
+        </tr>
+      </thead>
+      <tbody id="tablaMinorista"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="mayorista6" class="tab">
+  <div class="panel">
+    <h2>Precios mayoristas - 6 prendas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Prenda</th>
+          <th>Detalle</th>
+          <th>Costo ARS</th>
+          <th>Precio 6u</th>
+          <th>Ganancia</th>
+        </tr>
+      </thead>
+      <tbody id="tabla6"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="mayorista12" class="tab">
+  <div class="panel">
+    <h2>Precios mayoristas - 12 prendas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Prenda</th>
+          <th>Detalle</th>
+          <th>Costo ARS</th>
+          <th>Precio 12u</th>
+          <th>Ganancia</th>
+        </tr>
+      </thead>
+      <tbody id="tabla12"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="mayorista36" class="tab">
+  <div class="panel">
+    <h2>Precios mayoristas - 36 prendas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Prenda</th>
+          <th>Detalle</th>
+          <th>Costo ARS</th>
+          <th>Precio 36u</th>
+          <th>Ganancia</th>
+        </tr>
+      </thead>
+      <tbody id="tabla36"></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
 const productosIniciales = [
   {prenda:"Argentina femenina",detalle:"Sin nombre",cantidad:2,costoUsd:12.70},
-
   {prenda:"Short Argentina",detalle:"#24",cantidad:1,costoUsd:13.61},
   {prenda:"Short Argentina",detalle:"#5",cantidad:1,costoUsd:13.61},
   {prenda:"Short Argentina",detalle:"#10",cantidad:1,costoUsd:13.61},
-
   {prenda:"Argentina manga larga retro",detalle:"Messi",cantidad:2,costoUsd:20.87},
-
   {prenda:"Argentina manga larga retro",detalle:"Messi",cantidad:1,costoUsd:19.96},
   {prenda:"Argentina manga larga retro",detalle:"Messi",cantidad:1,costoUsd:19.96},
-
   {prenda:"Argentina manga larga celeste/blanca",detalle:"Messi",cantidad:2,costoUsd:19.96},
-
   {prenda:"Argentina azul",detalle:"Riquelme",cantidad:1,costoUsd:15.42},
   {prenda:"Argentina azul",detalle:"Messi",cantidad:1,costoUsd:16.33},
-
   {prenda:"Canada Portero",detalle:"Sin nombre",cantidad:1,costoUsd:18.15},
-
   {prenda:"Campera Manchester",detalle:"Sin nombre",cantidad:1,costoUsd:31.75},
-
   {prenda:"Suplente Argentina manga larga",detalle:"Paredes",cantidad:1,costoUsd:19.96},
-
   {prenda:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,costoUsd:17.24},
-
   {prenda:"Suplente Argentina manga larga",detalle:"Messi",cantidad:1,costoUsd:19.96},
-
   {prenda:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,costoUsd:18.15},
-
   {prenda:"Argentina celeste/blanca",detalle:"Riquelme",cantidad:1,costoUsd:15.42},
-
   {prenda:"Como Naranja",detalle:"Nico Paz",cantidad:1,costoUsd:15.42},
-
   {prenda:"Barcelona Retro",detalle:"Sin nombre",cantidad:1,costoUsd:17.24},
-
   {prenda:"Corinthians Negra",detalle:"Sin nombre",cantidad:1,costoUsd:18.15},
-
   {prenda:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,costoUsd:13.61},
-
   {prenda:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,costoUsd:14.52}
 ];
 
-let productos = JSON.parse(localStorage.getItem("productosImportB2B"));
+let productos = JSON.parse(localStorage.getItem("productosImportB2B_v2"));
 
-if (!productos) {
+if(!productos){
   productos = productosIniciales;
   guardar();
 }
 
-function formatoPesos(valor) {
+function guardar(){
+  localStorage.setItem("productosImportB2B_v2", JSON.stringify(productos));
+}
+
+function formatoPesos(valor){
   return "$" + Math.round(valor).toLocaleString("es-AR");
 }
 
-function formatoUsd(valor) {
+function formatoUsd(valor){
   return "USD " + Number(valor).toFixed(2);
 }
 
-function guardar() {
-  localStorage.setItem("productosImportB2B", JSON.stringify(productos));
+function precioConMargen(costo, margen){
+  return costo * (1 + margen / 100);
 }
 
-function agregarProducto() {
+function abrirTab(id, boton){
+  document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  boton.classList.add("active");
+}
+
+function agregarProducto(){
   const prenda = document.getElementById("prenda").value.trim();
-  const detalle = document.getElementById("detalle").value.trim();
+  const detalle = document.getElementById("detalle").value.trim() || "Sin nombre";
   const costoUsd = parseFloat(document.getElementById("costoUsd").value);
   const cantidad = parseInt(document.getElementById("cantidad").value);
 
-  if (!prenda || isNaN(costoUsd) || isNaN(cantidad) || cantidad <= 0) {
-    alert("Completá prenda, costo en USD y cantidad correctamente.");
+  if(!prenda || isNaN(costoUsd) || isNaN(cantidad) || cantidad <= 0){
+    alert("Completá correctamente prenda, costo USD y cantidad.");
     return;
   }
 
-  productos.push({
-    prenda,
-    detalle: detalle || "Sin nombre",
-    cantidad,
-    costoUsd
-  });
-
+  productos.push({prenda,detalle,cantidad,costoUsd});
   guardar();
 
   document.getElementById("prenda").value = "";
@@ -168,55 +353,103 @@ function agregarProducto() {
   calcularTodo();
 }
 
-function eliminarProducto(index) {
-  productos.splice(index, 1);
+function actualizarProducto(index, campo, valor){
+  if(campo === "cantidad"){
+    productos[index][campo] = parseInt(valor) || 0;
+  } else if(campo === "costoUsd"){
+    productos[index][campo] = parseFloat(valor) || 0;
+  } else {
+    productos[index][campo] = valor;
+  }
+
   guardar();
   calcularTodo();
 }
 
-function calcularTodo() {
-  const dolar = parseFloat(document.getElementById("dolar").value) || 0;
-  const margen = parseFloat(document.getElementById("margen").value) || 0;
-  const tabla = document.getElementById("tablaProductos");
+function eliminarProducto(index){
+  productos.splice(index,1);
+  guardar();
+  calcularTodo();
+}
 
-  tabla.innerHTML = "";
+function resetearProductos(){
+  productos = productosIniciales;
+  guardar();
+  calcularTodo();
+}
+
+function cargarFilaPrecio(tabla, producto, costoArs, precio, ganancia){
+  tabla.innerHTML += `
+    <tr>
+      <td>${producto.prenda}</td>
+      <td>${producto.detalle}</td>
+      <td>${formatoPesos(costoArs)}</td>
+      <td>${formatoPesos(precio)}</td>
+      <td>${formatoPesos(ganancia)}</td>
+    </tr>
+  `;
+}
+
+function calcularTodo(){
+  const dolar = parseFloat(document.getElementById("dolar").value) || 0;
+  const margenMinorista = parseFloat(document.getElementById("margenMinorista").value) || 0;
+  const margen6 = parseFloat(document.getElementById("margen6").value) || 0;
+  const margen12 = parseFloat(document.getElementById("margen12").value) || 0;
+  const margen36 = parseFloat(document.getElementById("margen36").value) || 0;
+
+  const tablaGestion = document.getElementById("tablaGestion");
+  const tablaMinorista = document.getElementById("tablaMinorista");
+  const tabla6 = document.getElementById("tabla6");
+  const tabla12 = document.getElementById("tabla12");
+  const tabla36 = document.getElementById("tabla36");
+
+  tablaGestion.innerHTML = "";
+  tablaMinorista.innerHTML = "";
+  tabla6.innerHTML = "";
+  tabla12.innerHTML = "";
+  tabla36.innerHTML = "";
 
   let stockTotal = 0;
   let totalUsd = 0;
   let totalArs = 0;
-  let ventaTotal = 0;
-  let gananciaTotal = 0;
+  let ventaMinoristaTotal = 0;
+  let gananciaMinoristaTotal = 0;
 
-  productos.forEach((producto, index) => {
-    const costoArsUnitario = producto.costoUsd * dolar;
-    const ventaSugeridaUnitario = costoArsUnitario * (1 + margen / 100);
-    const gananciaUnitario = ventaSugeridaUnitario - costoArsUnitario;
+  productos.forEach((producto,index)=>{
+    const costoArs = producto.costoUsd * dolar;
+    const precioMinorista = precioConMargen(costoArs,margenMinorista);
+    const precio6 = precioConMargen(costoArs,margen6);
+    const precio12 = precioConMargen(costoArs,margen12);
+    const precio36 = precioConMargen(costoArs,margen36);
 
     stockTotal += producto.cantidad;
     totalUsd += producto.costoUsd * producto.cantidad;
-    totalArs += costoArsUnitario * producto.cantidad;
-    ventaTotal += ventaSugeridaUnitario * producto.cantidad;
-    gananciaTotal += gananciaUnitario * producto.cantidad;
+    totalArs += costoArs * producto.cantidad;
+    ventaMinoristaTotal += precioMinorista * producto.cantidad;
+    gananciaMinoristaTotal += (precioMinorista - costoArs) * producto.cantidad;
 
-    tabla.innerHTML += `
+    tablaGestion.innerHTML += `
       <tr>
-        <td>${producto.prenda}</td>
-        <td>${producto.detalle}</td>
-        <td>${producto.cantidad}</td>
-        <td>${formatoUsd(producto.costoUsd)}</td>
-        <td>${formatoPesos(costoArsUnitario)}</td>
-        <td>${formatoPesos(ventaSugeridaUnitario)}</td>
-        <td>${formatoPesos(gananciaUnitario)}</td>
+        <td><input value="${producto.prenda}" oninput="actualizarProducto(${index},'prenda',this.value)"></td>
+        <td><input value="${producto.detalle}" oninput="actualizarProducto(${index},'detalle',this.value)"></td>
+        <td><input type="number" value="${producto.cantidad}" oninput="actualizarProducto(${index},'cantidad',this.value)"></td>
+        <td><input type="number" step="0.01" value="${producto.costoUsd}" oninput="actualizarProducto(${index},'costoUsd',this.value)"></td>
+        <td>${formatoPesos(costoArs)}</td>
         <td><button class="delete" onclick="eliminarProducto(${index})">Eliminar</button></td>
       </tr>
     `;
+
+    cargarFilaPrecio(tablaMinorista,producto,costoArs,precioMinorista,precioMinorista-costoArs);
+    cargarFilaPrecio(tabla6,producto,costoArs,precio6,precio6-costoArs);
+    cargarFilaPrecio(tabla12,producto,costoArs,precio12,precio12-costoArs);
+    cargarFilaPrecio(tabla36,producto,costoArs,precio36,precio36-costoArs);
   });
 
   document.getElementById("stockTotal").innerText = stockTotal;
   document.getElementById("totalUsd").innerText = formatoUsd(totalUsd);
   document.getElementById("totalArs").innerText = formatoPesos(totalArs);
-  document.getElementById("ventaTotal").innerText = formatoPesos(ventaTotal);
-  document.getElementById("gananciaTotal").innerText = formatoPesos(gananciaTotal);
+  document.getElementById("ventaMinoristaTotal").innerText = formatoPesos(ventaMinoristaTotal);
+  document.getElementById("gananciaMinoristaTotal").innerText = formatoPesos(gananciaMinoristaTotal);
 }
 
 calcularTodo();
