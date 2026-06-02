@@ -8,237 +8,168 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#0d0f10;color:#fff}
-header{background:#111214;border-bottom:3px solid #e50914;padding:22px}
-.logo{font-size:34px;font-weight:900}
-.logo span{color:#e50914}
-.container{padding:20px}
-.panel{background:#181a1d;border:1px solid #2a2c30;border-radius:16px;padding:18px;margin-bottom:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+header{background:#111214;border-bottom:3px solid #e50914;padding:20px}
+.logo{font-size:32px;font-weight:900}.logo span{color:#e50914}
+.container{padding:18px}
+.panel,.box{background:#181a1d;border:1px solid #2a2c30;border-radius:14px;padding:16px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
 label{font-size:13px;color:#ccc;display:block;margin-bottom:5px}
-input,select{width:100%;padding:11px;border:none;border-radius:8px;font-size:15px}
-button{border:none;border-radius:8px;padding:11px 14px;font-weight:bold;cursor:pointer;color:white;background:#e50914}
-button.green{background:#00c853}
-button.dark{background:#25272b}
-button.delete{background:#b00020}
-.tabs,.category-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
-.tab-btn,.cat-btn{background:#25272b}
-.tab-btn.active,.cat-btn.active{background:#e50914}
-.tab{display:none}
-.tab.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
-.card{background:#222428;padding:16px;border-radius:12px;text-align:center}
-.card strong{display:block;margin-top:7px;font-size:22px}
+input,select{width:100%;padding:10px;border:none;border-radius:8px;font-size:14px}
+button{border:none;border-radius:8px;padding:10px 13px;font-weight:bold;cursor:pointer;color:#fff;background:#e50914}
+button.green{background:#00c853}button.dark{background:#25272b}button.delete{background:#b00020}
+.tabs,.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab-btn,.cat-btn{background:#25272b}.active-btn{background:#e50914!important}
+.tab{display:none}.tab.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
+.card{background:#222428;padding:12px;border-radius:10px;text-align:center;font-size:13px}
+.card strong{display:block;margin-top:5px;font-size:18px}
 table{width:100%;border-collapse:collapse;background:#181a1d;border-radius:12px;overflow:hidden}
-th,td{padding:10px;text-align:center;border-bottom:1px solid #303236;font-size:14px}
+th,td{padding:9px;text-align:center;border-bottom:1px solid #303236;font-size:13px}
 th{background:#24262a}
-td input,td select{min-width:110px}
-.order,.margin-box,.purchase-box{border:1px solid #303236;border-radius:14px;margin-bottom:14px;overflow:hidden}
-.order-header,.margin-header,.purchase-header{background:#24262a;padding:15px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center}
-.order-body,.margin-body,.purchase-body{display:none;padding:15px;background:#181a1d}
-.order.active .order-body{display:block}
-.margin-box.active .margin-body{display:block}
-.purchase-box.active .purchase-body{display:block}
-.badge{background:#e50914;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:bold}
-.search{margin-bottom:15px}
-hr{border:0;border-top:1px solid #303236;margin:20px 0}
-.small{font-size:12px;color:#aaa}
-@media(max-width:768px){
-  .container{padding:10px}
-  th,td{font-size:12px;padding:7px}
-}
+.order,.drop{border:1px solid #303236;border-radius:12px;margin-bottom:12px;overflow:hidden}
+.head{background:#24262a;padding:13px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.body{display:none;padding:13px;background:#181a1d}.order.active .body,.drop.active .body{display:block}
+.badge{background:#e50914;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:bold}
+.search{margin-bottom:12px}
+@media(max-width:768px){.container{padding:10px}th,td{font-size:11px;padding:6px}}
 </style>
 </head>
 
 <body>
 
-<header>
-  <div class="logo">IMPORT<span>B2B</span></div>
-</header>
+<header><div class="logo">IMPORT<span>B2B</span></div></header>
 
 <div class="container">
 
 <div class="panel">
-<h2>Configuración general</h2>
-<div class="grid">
-  <div>
-    <label>Dólar para nuevos pedidos</label>
-    <input type="number" id="dolarNuevo" value="1500">
-  </div>
+<h2>Resumen general</h2>
+<div class="cards">
+<div class="card">Stock total<strong id="stockTotal">0</strong></div>
+<div class="card">Inversión USD total<strong id="totalUsd">USD 0</strong></div>
+<div class="card">Costo stock ARS total<strong id="totalArs">$0</strong></div>
+<div class="card">Ganancia esperada minorista<strong id="gananciaMinorista">$0</strong></div>
 </div>
 </div>
 
-<div class="margin-box" id="margenesBox">
-  <div class="margin-header" onclick="toggleMargenes()">
-    <strong>Márgenes por categoría</strong>
-    <span class="badge">Desplegar / Editar</span>
-  </div>
-
-  <div class="margin-body">
-    <table>
-      <thead>
-        <tr>
-          <th>Categoría</th>
-          <th>Minorista %</th>
-          <th>Mayorista 6 %</th>
-          <th>Mayorista 12 %</th>
-          <th>Mayorista 36 %</th>
-        </tr>
-      </thead>
-      <tbody id="tablaMargenes"></tbody>
-    </table>
-    <br>
-    <button class="green" onclick="guardarMargenesYContraer()">Guardar cambios</button>
-  </div>
+<div class="drop" id="margenesBox">
+<div class="head" onclick="toggleBox('margenesBox')">
+<strong>Márgenes por categoría</strong><span class="badge">Editar</span>
 </div>
-
-<div class="panel cards">
-  <div class="card">Stock total<strong id="stockTotal">0</strong></div>
-  <div class="card">Invertido USD<strong id="totalUsd">USD 0</strong></div>
-  <div class="card">Invertido ARS<strong id="totalArs">$0</strong></div>
-  <div class="card">Venta minorista redonda<strong id="ventaMinorista">$0</strong></div>
-  <div class="card">Ganancia minorista<strong id="gananciaMinorista">$0</strong></div>
+<div class="body">
+<table>
+<thead>
+<tr>
+<th>Categoría</th><th>Minorista %</th><th>Mayorista 6 %</th><th>Mayorista 12 %</th><th>Mayorista 36 %</th>
+</tr>
+</thead>
+<tbody id="tablaMargenes"></tbody>
+</table>
+<br>
+<button class="green" onclick="guardarMargenes()">Guardar cambios</button>
 </div>
-
-<div class="tabs">
-  <button class="tab-btn active" onclick="openTab('pedidos',this)">Gestión de pedidos</button>
-  <button class="tab-btn" onclick="openTab('minorista',this)">Minorista</button>
-  <button class="tab-btn" onclick="openTab('mayorista6',this)">Mayorista 6</button>
-  <button class="tab-btn" onclick="openTab('mayorista12',this)">Mayorista 12</button>
-  <button class="tab-btn" onclick="openTab('mayorista36',this)">Mayorista 36</button>
-  <button class="tab-btn" onclick="openTab('excel',this)">Excel / CSV</button>
 </div>
-
-<div id="pedidos" class="tab active">
 
 <div class="panel">
-<h2>Crear nuevo pedido</h2>
-
+<h2>Nuevo pedido</h2>
 <div class="grid">
-  <div>
-    <label>Fecha del pedido</label>
-    <input type="date" id="fechaPedido">
-  </div>
-
-  <div>
-    <label>Categoría</label>
-    <select id="categoriaNuevo"></select>
-  </div>
-
-  <div>
-    <label>Producto</label>
-    <input type="text" id="productoNuevo" placeholder="Ej: Argentina manga larga">
-  </div>
-
-  <div>
-    <label>Detalle</label>
-    <input type="text" id="detalleNuevo" placeholder="Ej: Messi">
-  </div>
-
-  <div>
-    <label>Costo USD</label>
-    <input type="number" id="costoUsdNuevo" step="0.01">
-  </div>
-
-  <div>
-    <label>Cantidad</label>
-    <input type="number" id="cantidadNuevo" value="1">
-  </div>
+<div><label>Fecha</label><input type="date" id="fechaPedido"></div>
+<div><label>Dólar</label><input type="number" id="dolarNuevo" value="1480"></div>
+<div><label>Categoría</label><select id="categoriaNuevo"></select></div>
+<div><label>Producto</label><input id="productoNuevo" placeholder="Ej: Argentina 2006"></div>
+<div><label>Detalle</label><input id="detalleNuevo" placeholder="Ej: Messi"></div>
+<div><label>Costo USD real</label><input type="number" step="0.01" id="costoUsdNuevo"></div>
+<div><label>Cantidad</label><input type="number" id="cantidadNuevo" value="1"></div>
 </div>
-
 <br>
-<button class="green" onclick="agregarAlPedidoTemporal()">Agregar prenda al pedido</button>
-
-<hr>
-
+<button class="green" onclick="agregarTemporal()">Agregar al pedido</button>
+<br><br>
 <h3>Pedido en carga</h3>
 <div id="pedidoTemporal"></div>
 <br>
 <button class="delete" onclick="finalizarPedido()">Finalizar pedido</button>
 </div>
 
-<div class="panel">
-<h2>Pedidos registrados</h2>
-<input class="search" id="buscarPedidos" placeholder="Buscar por fecha, pedido, producto, detalle o categoría..." oninput="renderPedidos()">
-<div id="listaPedidos"></div>
+<div class="tabs">
+<button class="tab-btn active-btn" onclick="openTab('pedidos',this)">Pedidos</button>
+<button class="tab-btn" onclick="openTab('minorista',this)">Minorista</button>
+<button class="tab-btn" onclick="openTab('mayorista6',this)">Mayorista 6</button>
+<button class="tab-btn" onclick="openTab('mayorista12',this)">Mayorista 12</button>
+<button class="tab-btn" onclick="openTab('mayorista36',this)">Mayorista 36</button>
+<button class="tab-btn" onclick="openTab('csv',this)">CSV</button>
 </div>
 
+<div id="pedidos" class="tab active">
+<div class="panel">
+<h2>Pedidos registrados</h2>
+<input class="search" id="buscarPedidos" placeholder="Buscar por fecha, producto, detalle, categoría o pedido..." oninput="renderPedidos()">
+<div id="listaPedidos"></div>
+</div>
 </div>
 
 <div id="minorista" class="tab">
 <div class="panel">
-<h2>Control de stock - Minorista</h2>
+<h2>Stock y precios minoristas</h2>
 <input class="search" id="buscarMinorista" placeholder="Buscar producto..." oninput="renderPrecios('minorista')">
-<div id="categoriasMinorista" class="category-buttons"></div>
+<div id="catsMinorista" class="cats"></div>
 <div id="tablaMinorista"></div>
 </div>
 </div>
 
 <div id="mayorista6" class="tab">
 <div class="panel">
-<h2>Control de stock - Mayorista 6 prendas</h2>
+<h2>Stock y precios mayorista 6 prendas</h2>
 <input class="search" id="buscarMayorista6" placeholder="Buscar producto..." oninput="renderPrecios('mayorista6')">
-<div id="categoriasMayorista6" class="category-buttons"></div>
+<div id="catsMayorista6" class="cats"></div>
 <div id="tablaMayorista6"></div>
 </div>
 </div>
 
 <div id="mayorista12" class="tab">
 <div class="panel">
-<h2>Control de stock - Mayorista 12 prendas</h2>
+<h2>Stock y precios mayorista 12 prendas</h2>
 <input class="search" id="buscarMayorista12" placeholder="Buscar producto..." oninput="renderPrecios('mayorista12')">
-<div id="categoriasMayorista12" class="category-buttons"></div>
+<div id="catsMayorista12" class="cats"></div>
 <div id="tablaMayorista12"></div>
 </div>
 </div>
 
 <div id="mayorista36" class="tab">
 <div class="panel">
-<h2>Control de stock - Mayorista 36 prendas</h2>
+<h2>Stock y precios mayorista 36 prendas</h2>
 <input class="search" id="buscarMayorista36" placeholder="Buscar producto..." oninput="renderPrecios('mayorista36')">
-<div id="categoriasMayorista36" class="category-buttons"></div>
+<div id="catsMayorista36" class="cats"></div>
 <div id="tablaMayorista36"></div>
 </div>
 </div>
 
-<div id="excel" class="tab">
+<div id="csv" class="tab">
 <div class="panel">
-<h2>Exportar / Importar Excel</h2>
-
-<button class="green" onclick="exportarCSV()">Exportar stock a CSV</button>
-
+<h2>Exportar / Importar</h2>
+<button class="green" onclick="exportarCSV()">Exportar stock CSV</button>
 <br><br>
-
-<label>Importar productos desde CSV</label>
-<input type="file" id="archivoCSV" accept=".csv" onchange="importarCSV(event)">
-<p class="small">
-Formato CSV: categoria,producto,detalle,cantidad,costoUsd,dolar,fecha
-</p>
+<label>Importar CSV: categoria,producto,detalle,cantidad,costoUsd,dolar,fecha</label>
+<input type="file" accept=".csv" onchange="importarCSV(event)">
 </div>
 </div>
 
 </div>
 
 <script>
+const FACTOR_PEDIDO_1 = 455 / 481;
+
 const categorias=[
-"CAMISETAS",
-"SHORES IMPORTADOS",
-"PERFUMES MASC",
-"VAPERS",
-"PERFUMES FEM",
-"STANLEY",
-"JBL",
-"COSMETICOS",
-"ACCESORIOS",
-"FUNDAS",
-"OTROS"
+"CAMISETAS","SHORES IMPORTADOS","CONJUNTOS","CAMPERAS","PERFUMES MASC",
+"PERFUMES FEM","VAPERS","STANLEY","JBL","COSMETICOS","ACCESORIOS","FUNDAS","OTROS"
 ];
 
-let margenes=JSON.parse(localStorage.getItem("importb2b_margenes_v2"))||{
+let margenes=JSON.parse(localStorage.getItem("importb2b_margenes_final"))||{
 "CAMISETAS":{minorista:90,mayorista6:45,mayorista12:35,mayorista36:25},
 "SHORES IMPORTADOS":{minorista:80,mayorista6:40,mayorista12:30,mayorista36:22},
+"CONJUNTOS":{minorista:80,mayorista6:40,mayorista12:30,mayorista36:22},
+"CAMPERAS":{minorista:70,mayorista6:35,mayorista12:28,mayorista36:20},
 "PERFUMES MASC":{minorista:70,mayorista6:35,mayorista12:28,mayorista36:20},
-"VAPERS":{minorista:60,mayorista6:30,mayorista12:22,mayorista36:15},
 "PERFUMES FEM":{minorista:70,mayorista6:35,mayorista12:28,mayorista36:20},
+"VAPERS":{minorista:60,mayorista6:30,mayorista12:22,mayorista36:15},
 "STANLEY":{minorista:65,mayorista6:30,mayorista12:24,mayorista36:18},
 "JBL":{minorista:60,mayorista6:28,mayorista12:22,mayorista36:16},
 "COSMETICOS":{minorista:75,mayorista6:35,mayorista12:25,mayorista36:18},
@@ -247,96 +178,89 @@ let margenes=JSON.parse(localStorage.getItem("importb2b_margenes_v2"))||{
 "OTROS":{minorista:70,mayorista6:35,mayorista12:25,mayorista36:18}
 };
 
+function real(original){return Number((original*FACTOR_PEDIDO_1).toFixed(2))}
+function ars(usd,dolar=1480){return Math.round(usd*dolar)}
+
 const pedidoInicial={
 id:1,
 fecha:"2026-06-01",
+nota:"Mercadería computable USD 481 - descuento USD 81 - envío USD 55 - inversión real USD 455",
 productos:[
-{categoria:"CAMISETAS",producto:"Argentina femenina",detalle:"Sin nombre",cantidad:2,costoUsd:12.70,dolar:1480,costoArs:18796},
-{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#24",cantidad:1,costoUsd:13.61,dolar:1480,costoArs:20143},
-{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#5",cantidad:1,costoUsd:13.61,dolar:1480,costoArs:20143},
-{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#10",cantidad:1,costoUsd:13.61,dolar:1480,costoArs:20143},
-{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:2,costoUsd:20.87,dolar:1480,costoArs:30888},
-{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,costoUsd:19.96,dolar:1480,costoArs:29541},
-{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,costoUsd:19.96,dolar:1480,costoArs:29541},
-{categoria:"CAMISETAS",producto:"Argentina manga larga celeste/blanca",detalle:"Messi",cantidad:2,costoUsd:19.96,dolar:1480,costoArs:29541},
-{categoria:"CAMISETAS",producto:"Argentina azul",detalle:"Riquelme",cantidad:1,costoUsd:15.42,dolar:1480,costoArs:22822},
-{categoria:"CAMISETAS",producto:"Argentina azul",detalle:"Messi",cantidad:1,costoUsd:16.33,dolar:1480,costoArs:24168},
-{categoria:"CAMISETAS",producto:"Canada Portero",detalle:"Sin nombre",cantidad:1,costoUsd:18.15,dolar:1480,costoArs:26862},
-{categoria:"CAMISETAS",producto:"Campera Manchester",detalle:"Sin nombre",cantidad:1,costoUsd:31.75,dolar:1480,costoArs:46990},
-{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Paredes",cantidad:1,costoUsd:19.96,dolar:1480,costoArs:29541},
-{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,costoUsd:17.24,dolar:1480,costoArs:25515},
-{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Messi",cantidad:1,costoUsd:19.96,dolar:1480,costoArs:29541},
-{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,costoUsd:18.15,dolar:1480,costoArs:26862},
-{categoria:"CAMISETAS",producto:"Argentina celeste/blanca",detalle:"Riquelme",cantidad:1,costoUsd:15.42,dolar:1480,costoArs:22822},
-{categoria:"CAMISETAS",producto:"Como Naranja",detalle:"Nico Paz",cantidad:1,costoUsd:15.42,dolar:1480,costoArs:22822},
-{categoria:"CAMISETAS",producto:"Barcelona Retro",detalle:"Sin nombre",cantidad:1,costoUsd:17.24,dolar:1480,costoArs:25515},
-{categoria:"CAMISETAS",producto:"Corinthians Negra",detalle:"Sin nombre",cantidad:1,costoUsd:18.15,dolar:1480,costoArs:26862},
-{categoria:"CAMISETAS",producto:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,costoUsd:13.61,dolar:1480,costoArs:20143},
-{categoria:"CAMISETAS",producto:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,costoUsd:14.52,dolar:1480,costoArs:21490}
+{categoria:"CAMISETAS",producto:"Argentina femenina",detalle:"Sin nombre",cantidad:2,originalUsd:14,costoUsd:real(14),dolar:1480},
+{categoria:"CONJUNTOS",producto:"Conjunto Argentina",detalle:"Sin nombre",cantidad:1,originalUsd:12,costoUsd:real(12),dolar:1480},
+{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#24",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
+{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#5",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
+{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#10",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
+{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:2,originalUsd:23,costoUsd:real(23),dolar:1480},
+{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
+{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
+{categoria:"CAMISETAS",producto:"Argentina manga larga celeste/blanca 2006",detalle:"Messi",cantidad:2,originalUsd:22,costoUsd:real(22),dolar:1480},
+{categoria:"CAMISETAS",producto:"Argentina azul 2006",detalle:"Riquelme",cantidad:1,originalUsd:17,costoUsd:real(17),dolar:1480},
+{categoria:"CAMISETAS",producto:"Argentina azul 2006",detalle:"Messi",cantidad:1,originalUsd:18,costoUsd:real(18),dolar:1480},
+{categoria:"CAMISETAS",producto:"Canada Portero",detalle:"Sin nombre",cantidad:1,originalUsd:20,costoUsd:real(20),dolar:1480},
+{categoria:"CAMPERAS",producto:"Campera Manchester",detalle:"Sin nombre",cantidad:1,originalUsd:35,costoUsd:real(35),dolar:1480},
+{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Paredes",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
+{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,originalUsd:19,costoUsd:real(19),dolar:1480},
+{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
+{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,originalUsd:20,costoUsd:real(20),dolar:1480},
+{categoria:"CAMISETAS",producto:"Argentina celeste/blanca",detalle:"Riquelme",cantidad:1,originalUsd:17,costoUsd:real(17),dolar:1480},
+{categoria:"CAMISETAS",producto:"Como Naranja",detalle:"Nico Paz",cantidad:1,originalUsd:17,costoUsd:real(17),dolar:1480},
+{categoria:"CAMISETAS",producto:"New Castle Retro",detalle:"Sin nombre",cantidad:1,originalUsd:19,costoUsd:real(19),dolar:1480},
+{categoria:"CAMISETAS",producto:"Corinthians Negra",detalle:"Sin nombre",cantidad:1,originalUsd:20,costoUsd:real(20),dolar:1480},
+{categoria:"CAMISETAS",producto:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
+{categoria:"CAMISETAS",producto:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,originalUsd:16,costoUsd:real(16),dolar:1480}
 ]
 };
 
-let pedidos=JSON.parse(localStorage.getItem("importb2b_pedidos_v9"))||[pedidoInicial];
-let pedidoTemporal=[];
-let categoriaActiva={
-minorista:"CAMISETAS",
-mayorista6:"CAMISETAS",
-mayorista12:"CAMISETAS",
-mayorista36:"CAMISETAS"
-};
+pedidoInicial.productos.forEach(p=>p.costoArs=ars(p.costoUsd,p.dolar));
+
+let pedidos=JSON.parse(localStorage.getItem("importb2b_pedidos_final_v1"))||[pedidoInicial];
+let temporal=[];
+let categoriaActiva={minorista:"CAMISETAS",mayorista6:"CAMISETAS",mayorista12:"CAMISETAS",mayorista36:"CAMISETAS"};
 
 document.getElementById("fechaPedido").valueAsDate=new Date();
 
 function guardar(){
-localStorage.setItem("importb2b_pedidos_v9",JSON.stringify(pedidos));
-localStorage.setItem("importb2b_margenes_v2",JSON.stringify(margenes));
+localStorage.setItem("importb2b_pedidos_final_v1",JSON.stringify(pedidos));
+localStorage.setItem("importb2b_margenes_final",JSON.stringify(margenes));
 }
 
 function money(n){return "$"+Math.round(n).toLocaleString("es-AR")}
 function usd(n){return "USD "+Number(n).toFixed(2)}
 function redondear500(n){return Math.ceil(n/500)*500}
 
-function toggleMargenes(){
-document.getElementById("margenesBox").classList.toggle("active");
+function cargarCategorias(){
+document.getElementById("categoriaNuevo").innerHTML=categorias.map(c=>`<option>${c}</option>`).join("");
 }
 
-function guardarMargenesYContraer(){
+function toggleBox(id){document.getElementById(id).classList.toggle("active")}
+
+function renderMargenes(){
+document.getElementById("tablaMargenes").innerHTML=categorias.map(c=>`
+<tr>
+<td>${c}</td>
+<td><input type="number" value="${margenes[c].minorista}" onchange="margenes['${c}'].minorista=parseFloat(this.value)||0"></td>
+<td><input type="number" value="${margenes[c].mayorista6}" onchange="margenes['${c}'].mayorista6=parseFloat(this.value)||0"></td>
+<td><input type="number" value="${margenes[c].mayorista12}" onchange="margenes['${c}'].mayorista12=parseFloat(this.value)||0"></td>
+<td><input type="number" value="${margenes[c].mayorista36}" onchange="margenes['${c}'].mayorista36=parseFloat(this.value)||0"></td>
+</tr>`).join("");
+}
+
+function guardarMargenes(){
 guardar();
 document.getElementById("margenesBox").classList.remove("active");
 renderAll();
 }
 
-function cargarCategorias(){
-const select=document.getElementById("categoriaNuevo");
-select.innerHTML=categorias.map(c=>`<option value="${c}">${c}</option>`).join("");
-}
-
-function renderMargenes(){
-const tbody=document.getElementById("tablaMargenes");
-tbody.innerHTML=categorias.map(c=>`
-<tr>
-<td>${c}</td>
-<td><input type="number" value="${margenes[c].minorista}" onchange="editarMargen('${c}','minorista',this.value)"></td>
-<td><input type="number" value="${margenes[c].mayorista6}" onchange="editarMargen('${c}','mayorista6',this.value)"></td>
-<td><input type="number" value="${margenes[c].mayorista12}" onchange="editarMargen('${c}','mayorista12',this.value)"></td>
-<td><input type="number" value="${margenes[c].mayorista36}" onchange="editarMargen('${c}','mayorista36',this.value)"></td>
-</tr>`).join("");
-}
-
-function editarMargen(cat,tipo,val){
-margenes[cat][tipo]=parseFloat(val)||0;
-guardar();
-}
-
 function openTab(id,btn){
 document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active-btn"));
 document.getElementById(id).classList.add("active");
-btn.classList.add("active");
+btn.classList.add("active-btn");
 renderAll();
 }
 
-function agregarAlPedidoTemporal(){
+function agregarTemporal(){
 const fecha=document.getElementById("fechaPedido").value;
 const dolar=parseFloat(document.getElementById("dolarNuevo").value);
 const categoria=document.getElementById("categoriaNuevo").value;
@@ -344,357 +268,147 @@ const producto=document.getElementById("productoNuevo").value.trim();
 const detalle=document.getElementById("detalleNuevo").value.trim()||"Sin detalle";
 const costoUsd=parseFloat(document.getElementById("costoUsdNuevo").value);
 const cantidad=parseInt(document.getElementById("cantidadNuevo").value);
-
-if(!fecha||!producto||isNaN(dolar)||isNaN(costoUsd)||isNaN(cantidad)||cantidad<=0){
-alert("Completá fecha, producto, dólar, costo USD y cantidad.");
-return;
+if(!fecha||!producto||isNaN(dolar)||isNaN(costoUsd)||isNaN(cantidad)||cantidad<=0){alert("Completá todos los datos.");return}
+temporal.push({categoria,producto,detalle,cantidad,originalUsd:costoUsd,costoUsd,dolar,costoArs:Math.round(costoUsd*dolar)});
+["productoNuevo","detalleNuevo","costoUsdNuevo"].forEach(id=>document.getElementById(id).value="");
+document.getElementById("cantidadNuevo").value=1;
+renderTemporal();
 }
 
-pedidoTemporal.push({
-categoria,producto,detalle,cantidad,costoUsd,dolar,costoArs:costoUsd*dolar
-});
-
-document.getElementById("productoNuevo").value="";
-document.getElementById("detalleNuevo").value="";
-document.getElementById("costoUsdNuevo").value="";
-document.getElementById("cantidadNuevo").value="1";
-
-renderPedidoTemporal();
-}
-
-function renderPedidoTemporal(){
-const cont=document.getElementById("pedidoTemporal");
-
-if(pedidoTemporal.length===0){
-cont.innerHTML="<p>No hay prendas cargadas todavía.</p>";
-return;
-}
-
-const totalUsd=pedidoTemporal.reduce((a,i)=>a+i.costoUsd*i.cantidad,0);
-const totalArs=pedidoTemporal.reduce((a,i)=>a+i.costoArs*i.cantidad,0);
-
-cont.innerHTML=`
-<table>
-<thead>
-<tr>
-<th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD</th><th>ARS fijo</th><th>Acción</th>
-</tr>
-</thead>
-<tbody>
-${pedidoTemporal.map((i,index)=>`
-<tr>
-<td>${i.categoria}</td>
-<td>${i.producto}</td>
-<td>${i.detalle}</td>
-<td>${i.cantidad}</td>
-<td>${usd(i.costoUsd)}</td>
-<td>${money(i.costoArs)}</td>
-<td><button class="delete" onclick="pedidoTemporal.splice(${index},1);renderPedidoTemporal()">Eliminar</button></td>
-</tr>`).join("")}
-</tbody>
-</table>
-<br>
-<div class="cards">
-<div class="card">Total pedido USD<strong>${usd(totalUsd)}</strong></div>
-<div class="card">Total pedido ARS<strong>${money(totalArs)}</strong></div>
-</div>`;
+function renderTemporal(){
+const div=document.getElementById("pedidoTemporal");
+if(!temporal.length){div.innerHTML="<p>No hay productos cargados.</p>";return}
+let totalUsd=temporal.reduce((a,i)=>a+i.costoUsd*i.cantidad,0);
+let totalArs=temporal.reduce((a,i)=>a+i.costoArs*i.cantidad,0);
+div.innerHTML=`
+<table><thead><tr><th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD</th><th>ARS</th><th></th></tr></thead>
+<tbody>${temporal.map((i,x)=>`<tr><td>${i.categoria}</td><td>${i.producto}</td><td>${i.detalle}</td><td>${i.cantidad}</td><td>${usd(i.costoUsd)}</td><td>${money(i.costoArs)}</td><td><button class="delete" onclick="temporal.splice(${x},1);renderTemporal()">Eliminar</button></td></tr>`).join("")}</tbody></table>
+<br><div class="cards"><div class="card">Pedido USD<strong>${usd(totalUsd)}</strong></div><div class="card">Pedido ARS<strong>${money(totalArs)}</strong></div></div>`;
 }
 
 function finalizarPedido(){
-if(pedidoTemporal.length===0){
-alert("Primero cargá al menos una prenda.");
-return;
-}
-
-const fecha=document.getElementById("fechaPedido").value;
+if(!temporal.length){alert("Cargá al menos un producto.");return}
 const nuevoId=pedidos.length?Math.max(...pedidos.map(p=>p.id))+1:1;
-
-pedidos.push({
-id:nuevoId,
-fecha,
-productos:[...pedidoTemporal]
-});
-
-pedidoTemporal=[];
+pedidos.push({id:nuevoId,fecha:document.getElementById("fechaPedido").value,productos:[...temporal]});
+temporal=[];
 guardar();
 renderAll();
-alert("Pedido #"+nuevoId+" finalizado correctamente.");
+alert("Pedido #"+nuevoId+" finalizado.");
 }
 
 function productosStock(){
 let stock=[];
-pedidos.forEach(p=>{
-p.productos.forEach(i=>stock.push({...i,pedido:p.id,fecha:p.fecha}));
-});
+pedidos.forEach(p=>p.productos.forEach(i=>stock.push({...i,pedido:p.id,fecha:p.fecha})));
 return stock;
 }
 
 function stockAgrupado(){
-const grupos={};
-
+const g={};
 productosStock().forEach(i=>{
 const key=`${i.categoria}|${i.producto}|${i.detalle}`;
-
-if(!grupos[key]){
-grupos[key]={
-categoria:i.categoria,
-producto:i.producto,
-detalle:i.detalle,
-cantidad:0,
-totalUsd:0,
-totalArs:0,
-compras:[]
-};
-}
-
-grupos[key].cantidad+=i.cantidad;
-grupos[key].totalUsd+=i.costoUsd*i.cantidad;
-grupos[key].totalArs+=i.costoArs*i.cantidad;
-grupos[key].compras.push(i);
+if(!g[key])g[key]={categoria:i.categoria,producto:i.producto,detalle:i.detalle,cantidad:0,totalUsd:0,totalArs:0,compras:[]};
+g[key].cantidad+=i.cantidad;
+g[key].totalUsd+=i.costoUsd*i.cantidad;
+g[key].totalArs+=i.costoArs*i.cantidad;
+g[key].compras.push(i);
 });
-
-return Object.values(grupos).map(g=>({
-...g,
-costoPromedioUsd:g.totalUsd/g.cantidad,
-costoPromedioArs:g.totalArs/g.cantidad
-}));
+return Object.values(g).map(i=>({...i,costoPromedioUsd:i.totalUsd/i.cantidad,costoPromedioArs:i.totalArs/i.cantidad}));
 }
 
 function renderResumen(){
-const stock=stockAgrupado();
-
-const totalCant=stock.reduce((a,i)=>a+i.cantidad,0);
-const totalUsd=stock.reduce((a,i)=>a+i.totalUsd,0);
-const totalArs=stock.reduce((a,i)=>a+i.totalArs,0);
-
-const venta=stock.reduce((a,i)=>{
-const margen=margenes[i.categoria]?.minorista||0;
-return a+redondear500(i.costoPromedioArs*(1+margen/100))*i.cantidad;
-},0);
-
+const s=stockAgrupado();
+const totalCant=s.reduce((a,i)=>a+i.cantidad,0);
+const totalUsd=s.reduce((a,i)=>a+i.totalUsd,0);
+const totalArs=s.reduce((a,i)=>a+i.totalArs,0);
+const venta=s.reduce((a,i)=>a+redondear500(i.costoPromedioArs*(1+(margenes[i.categoria]?.minorista||0)/100))*i.cantidad,0);
 document.getElementById("stockTotal").innerText=totalCant;
 document.getElementById("totalUsd").innerText=usd(totalUsd);
 document.getElementById("totalArs").innerText=money(totalArs);
-document.getElementById("ventaMinorista").innerText=money(venta);
 document.getElementById("gananciaMinorista").innerText=money(venta-totalArs);
 }
 
 function renderPedidos(){
-const cont=document.getElementById("listaPedidos");
-const buscar=document.getElementById("buscarPedidos").value.toLowerCase();
-cont.innerHTML="";
-
-pedidos.forEach(pedido=>{
-const texto=(`#${pedido.id} ${pedido.fecha} `+JSON.stringify(pedido)).toLowerCase();
-if(buscar&&!texto.includes(buscar))return;
-
-const totalUsd=pedido.productos.reduce((a,i)=>a+i.costoUsd*i.cantidad,0);
-const totalArs=pedido.productos.reduce((a,i)=>a+i.costoArs*i.cantidad,0);
-
-cont.innerHTML+=`
-<div class="order" data-id="${pedido.id}">
-<div class="order-header" onclick="togglePedido(${pedido.id})">
-<div><strong>Pedido #${pedido.id}</strong> — ${pedido.fecha}</div>
+const div=document.getElementById("listaPedidos");
+const q=document.getElementById("buscarPedidos").value.toLowerCase();
+div.innerHTML="";
+pedidos.forEach(p=>{
+const texto=(`#${p.id} ${p.fecha} ${JSON.stringify(p)}`).toLowerCase();
+if(q&&!texto.includes(q))return;
+const totalUsd=p.productos.reduce((a,i)=>a+i.costoUsd*i.cantidad,0);
+const totalArs=p.productos.reduce((a,i)=>a+i.costoArs*i.cantidad,0);
+div.innerHTML+=`
+<div class="order" data-id="${p.id}">
+<div class="head" onclick="togglePedido(${p.id})">
+<div><strong>Pedido #${p.id}</strong> — ${p.fecha}<br><small>${p.nota||""}</small></div>
 <div><span class="badge">${usd(totalUsd)}</span> <span class="badge">${money(totalArs)}</span></div>
 </div>
-<div class="order-body">
-<table>
-<thead>
-<tr><th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD</th><th>ARS fijo</th></tr>
-</thead>
-<tbody>
-${pedido.productos.map(i=>`
-<tr>
-<td>${i.categoria}</td><td>${i.producto}</td><td>${i.detalle}</td><td>${i.cantidad}</td><td>${usd(i.costoUsd)}</td><td>${money(i.costoArs)}</td>
-</tr>`).join("")}
-</tbody>
-</table>
-<br>
-<div class="cards">
-<div class="card">Invertido USD<strong>${usd(totalUsd)}</strong></div>
-<div class="card">Invertido ARS<strong>${money(totalArs)}</strong></div>
-</div>
-</div>
-</div>`;
+<div class="body">
+<table><thead><tr><th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD original</th><th>USD real</th><th>ARS</th></tr></thead>
+<tbody>${p.productos.map(i=>`<tr><td>${i.categoria}</td><td>${i.producto}</td><td>${i.detalle}</td><td>${i.cantidad}</td><td>${usd(i.originalUsd||i.costoUsd)}</td><td>${usd(i.costoUsd)}</td><td>${money(i.costoArs)}</td></tr>`).join("")}</tbody></table>
+</div></div>`;
 });
 }
 
 function togglePedido(id){
-document.querySelectorAll(".order").forEach(o=>{
-if(o.dataset.id!=id)o.classList.remove("active");
-});
+document.querySelectorAll(".order").forEach(o=>{if(o.dataset.id!=id)o.classList.remove("active")});
 document.querySelector(`.order[data-id="${id}"]`).classList.toggle("active");
 }
 
-function setCategoria(tab,categoria){
-categoriaActiva[tab]=categoria;
-renderPrecios(tab);
-}
+function setCategoria(tab,cat){categoriaActiva[tab]=cat;renderPrecios(tab)}
 
-function renderCategorias(tab){
-const id="categorias"+tab.charAt(0).toUpperCase()+tab.slice(1);
-const cont=document.getElementById(id);
-if(!cont)return;
-cont.innerHTML=categorias.map(c=>`
-<button class="cat-btn ${categoriaActiva[tab]===c?'active':''}" onclick="setCategoria('${tab}','${c}')">${c}</button>
-`).join("");
-}
-
-function toggleCompras(id){
-document.getElementById(id).classList.toggle("active");
+function renderCats(tab){
+const map={minorista:"catsMinorista",mayorista6:"catsMayorista6",mayorista12:"catsMayorista12",mayorista36:"catsMayorista36"};
+document.getElementById(map[tab]).innerHTML=categorias.map(c=>`<button class="cat-btn ${categoriaActiva[tab]===c?'active-btn':''}" onclick="setCategoria('${tab}','${c}')">${c}</button>`).join("");
 }
 
 function renderPrecios(tab){
-renderCategorias(tab);
-
-const buscadores={
-minorista:"buscarMinorista",
-mayorista6:"buscarMayorista6",
-mayorista12:"buscarMayorista12",
-mayorista36:"buscarMayorista36"
-};
-
-const tablas={
-minorista:"tablaMinorista",
-mayorista6:"tablaMayorista6",
-mayorista12:"tablaMayorista12",
-mayorista36:"tablaMayorista36"
-};
-
-const buscar=document.getElementById(buscadores[tab]).value.toLowerCase();
-const cont=document.getElementById(tablas[tab]);
-
-const filtrados=stockAgrupado().filter(i=>{
-const texto=`${i.categoria} ${i.producto} ${i.detalle}`.toLowerCase();
-return i.categoria===categoriaActiva[tab]&&(!buscar||texto.includes(buscar));
-});
-
-cont.innerHTML=`
-<table>
-<thead>
-<tr>
-<th>Producto</th>
-<th>Detalle</th>
-<th>Stock total</th>
-<th>Costo promedio ARS</th>
-<th>Venta sugerida</th>
-<th>Venta redonda</th>
-<th>Ganancia unidad</th>
-<th>Compras</th>
-</tr>
-</thead>
-<tbody>
-${filtrados.map((i,index)=>{
+renderCats(tab);
+const inputs={minorista:"buscarMinorista",mayorista6:"buscarMayorista6",mayorista12:"buscarMayorista12",mayorista36:"buscarMayorista36"};
+const tables={minorista:"tablaMinorista",mayorista6:"tablaMayorista6",mayorista12:"tablaMayorista12",mayorista36:"tablaMayorista36"};
+const q=document.getElementById(inputs[tab]).value.toLowerCase();
+const data=stockAgrupado().filter(i=>i.categoria===categoriaActiva[tab]&&(`${i.producto} ${i.detalle} ${i.categoria}`.toLowerCase().includes(q)));
+document.getElementById(tables[tab]).innerHTML=`
+<table><thead><tr><th>Producto</th><th>Detalle</th><th>Stock</th><th>Costo promedio</th><th>Venta sugerida</th><th>Venta redonda</th><th>Ganancia/unidad</th></tr></thead>
+<tbody>${data.map(i=>{
 const margen=margenes[i.categoria]?.[tab]||0;
 const venta=i.costoPromedioArs*(1+margen/100);
-const redonda=redondear500(venta);
-const comprasId=`compras_${tab}_${index}`;
-return `
-<tr>
-<td>${i.producto}</td>
-<td>${i.detalle}</td>
-<td>${i.cantidad}</td>
-<td>${money(i.costoPromedioArs)}</td>
-<td>${money(venta)}</td>
-<td><strong>${money(redonda)}</strong></td>
-<td>${money(redonda-i.costoPromedioArs)}</td>
-<td><button class="dark" onclick="toggleCompras('${comprasId}')">Ver compras</button></td>
-</tr>
-<tr>
-<td colspan="8">
-<div class="purchase-box" id="${comprasId}">
-<div class="purchase-header" onclick="toggleCompras('${comprasId}')">
-<strong>Detalle de compras</strong>
-<span class="badge">${i.compras.length} entradas</span>
-</div>
-<div class="purchase-body">
-<table>
-<thead>
-<tr><th>Pedido</th><th>Fecha</th><th>Cant.</th><th>USD</th><th>Dólar</th><th>Costo ARS</th></tr>
-</thead>
-<tbody>
-${i.compras.map(c=>`
-<tr>
-<td>#${c.pedido}</td>
-<td>${c.fecha}</td>
-<td>${c.cantidad}</td>
-<td>${usd(c.costoUsd)}</td>
-<td>${money(c.dolar)}</td>
-<td>${money(c.costoArs)}</td>
-</tr>`).join("")}
-</tbody>
-</table>
-</div>
-</div>
-</td>
-</tr>
-`;
-}).join("")}
-</tbody>
-</table>`;
+const red=redondear500(venta);
+return `<tr><td>${i.producto}</td><td>${i.detalle}</td><td>${i.cantidad}</td><td>${money(i.costoPromedioArs)}</td><td>${money(venta)}</td><td><strong>${money(red)}</strong></td><td>${money(red-i.costoPromedioArs)}</td></tr>`;
+}).join("")}</tbody></table>`;
 }
 
 function exportarCSV(){
-const rows=[["pedido","fecha","categoria","producto","detalle","cantidad","costoUsd","dolar","costoArs"]];
-pedidos.forEach(p=>{
-p.productos.forEach(i=>{
-rows.push([p.id,p.fecha,i.categoria,i.producto,i.detalle,i.cantidad,i.costoUsd,i.dolar,i.costoArs]);
-});
-});
+const rows=[["pedido","fecha","categoria","producto","detalle","cantidad","originalUsd","costoUsd","dolar","costoArs"]];
+pedidos.forEach(p=>p.productos.forEach(i=>rows.push([p.id,p.fecha,i.categoria,i.producto,i.detalle,i.cantidad,i.originalUsd||i.costoUsd,i.costoUsd,i.dolar,i.costoArs])));
 const csv=rows.map(r=>r.join(",")).join("\n");
 const blob=new Blob([csv],{type:"text/csv"});
 const url=URL.createObjectURL(blob);
 const a=document.createElement("a");
-a.href=url;
-a.download="stock_importb2b.csv";
-a.click();
-URL.revokeObjectURL(url);
+a.href=url;a.download="stock_importb2b.csv";a.click();URL.revokeObjectURL(url);
 }
 
-function importarCSV(event){
-const file=event.target.files[0];
-if(!file)return;
-
-const reader=new FileReader();
-reader.onload=function(e){
-const lines=e.target.result.split("\n").slice(1);
+function importarCSV(e){
+const file=e.target.files[0];if(!file)return;
+const r=new FileReader();
+r.onload=function(ev){
+const lines=ev.target.result.split("\n").slice(1);
 const nuevoId=pedidos.length?Math.max(...pedidos.map(p=>p.id))+1:1;
 const productos=[];
-
 lines.forEach(line=>{
-const [categoria,producto,detalle,cantidad,costoUsd,dolar,fechaCsv]=line.split(",");
+const [categoria,producto,detalle,cantidad,costoUsd,dolar,fecha]=line.split(",");
 if(!producto)return;
-
-const d=parseFloat(dolar)||parseFloat(document.getElementById("dolarNuevo").value);
-const usdCosto=parseFloat(costoUsd)||0;
-
-productos.push({
-categoria:categoria||"OTROS",
-producto:producto||"Sin nombre",
-detalle:detalle||"Sin detalle",
-cantidad:parseInt(cantidad)||1,
-costoUsd:usdCosto,
-dolar:d,
-costoArs:usdCosto*d
+const c=parseFloat(costoUsd)||0,d=parseFloat(dolar)||1480;
+productos.push({categoria:categoria||"OTROS",producto,detalle:detalle||"Sin detalle",cantidad:parseInt(cantidad)||1,originalUsd:c,costoUsd:c,dolar:d,costoArs:Math.round(c*d)});
 });
-});
-
-pedidos.push({
-id:nuevoId,
-fecha:new Date().toISOString().slice(0,10),
-productos
-});
-
-guardar();
-renderAll();
-alert("CSV importado como Pedido #"+nuevoId);
+pedidos.push({id:nuevoId,fecha:new Date().toISOString().slice(0,10),productos});
+guardar();renderAll();alert("CSV importado como Pedido #"+nuevoId);
 };
-reader.readAsText(file);
+r.readAsText(file);
 }
 
 function renderAll(){
 renderMargenes();
-renderPedidoTemporal();
+renderTemporal();
 renderResumen();
 renderPedidos();
 renderPrecios("minorista");
