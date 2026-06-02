@@ -12,20 +12,21 @@ header{background:#111214;border-bottom:3px solid #e50914;padding:20px}
 .logo{font-size:32px;font-weight:900}.logo span{color:#e50914}
 .container{padding:18px}
 .panel,.box{background:#181a1d;border:1px solid #2a2c30;border-radius:14px;padding:16px;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
 label{font-size:13px;color:#ccc;display:block;margin-bottom:5px}
-input,select{width:100%;padding:10px;border:none;border-radius:8px;font-size:14px}
-button{border:none;border-radius:8px;padding:10px 13px;font-weight:bold;cursor:pointer;color:#fff;background:#e50914}
+input,select{width:100%;padding:9px;border:none;border-radius:8px;font-size:14px}
+button{border:none;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer;color:#fff;background:#e50914}
 button.green{background:#00c853}button.dark{background:#25272b}button.delete{background:#b00020}
 .tabs,.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .tab-btn,.cat-btn{background:#25272b}.active-btn{background:#e50914!important}
 .tab{display:none}.tab.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
-.card{background:#222428;padding:12px;border-radius:10px;text-align:center;font-size:13px}
-.card strong{display:block;margin-top:5px;font-size:18px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.card{background:#222428;padding:10px;border-radius:10px;text-align:center;font-size:13px}
+.card strong{display:block;margin-top:5px;font-size:17px}
 table{width:100%;border-collapse:collapse;background:#181a1d;border-radius:12px;overflow:hidden}
-th,td{padding:9px;text-align:center;border-bottom:1px solid #303236;font-size:13px}
+th,td{padding:8px;text-align:center;border-bottom:1px solid #303236;font-size:12px}
 th{background:#24262a}
+td input,td select{min-width:95px}
 .order,.drop{border:1px solid #303236;border-radius:12px;margin-bottom:12px;overflow:hidden}
 .head{background:#24262a;padding:13px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center}
 .body{display:none;padding:13px;background:#181a1d}.order.active .body,.drop.active .body{display:block}
@@ -162,7 +163,7 @@ const categorias=[
 "PERFUMES FEM","VAPERS","STANLEY","JBL","COSMETICOS","ACCESORIOS","FUNDAS","OTROS"
 ];
 
-let margenes=JSON.parse(localStorage.getItem("importb2b_margenes_final"))||{
+let margenes=JSON.parse(localStorage.getItem("importb2b_margenes_v20"))||{
 "CAMISETAS":{minorista:90,mayorista6:45,mayorista12:35,mayorista36:25},
 "SHORES IMPORTADOS":{minorista:80,mayorista6:40,mayorista12:30,mayorista36:22},
 "CONJUNTOS":{minorista:80,mayorista6:40,mayorista12:30,mayorista36:22},
@@ -178,19 +179,18 @@ let margenes=JSON.parse(localStorage.getItem("importb2b_margenes_final"))||{
 "OTROS":{minorista:70,mayorista6:35,mayorista12:25,mayorista36:18}
 };
 
-function real(original){return Number((original*FACTOR_PEDIDO_1).toFixed(2))}
+function real(original){return original*FACTOR_PEDIDO_1}
 function ars(usd,dolar=1480){return Math.round(usd*dolar)}
 
 const pedidoInicial={
 id:1,
 fecha:"2026-06-01",
-nota:"Mercadería computable USD 481 - descuento USD 81 - envío USD 55 - inversión real USD 455",
+nota:"Pedido #1 computado: inversión real USD 455. Short Messi #10 bonificado excluido del stock y del costo.",
 productos:[
 {categoria:"CAMISETAS",producto:"Argentina femenina",detalle:"Sin nombre",cantidad:2,originalUsd:14,costoUsd:real(14),dolar:1480},
 {categoria:"CONJUNTOS",producto:"Conjunto Argentina",detalle:"Sin nombre",cantidad:1,originalUsd:12,costoUsd:real(12),dolar:1480},
 {categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#24",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
 {categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#5",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
-{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#10",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
 {categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:2,originalUsd:23,costoUsd:real(23),dolar:1480},
 {categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
 {categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
@@ -214,15 +214,15 @@ productos:[
 
 pedidoInicial.productos.forEach(p=>p.costoArs=ars(p.costoUsd,p.dolar));
 
-let pedidos=JSON.parse(localStorage.getItem("importb2b_pedidos_final_v1"))||[pedidoInicial];
+let pedidos=JSON.parse(localStorage.getItem("importb2b_pedidos_v20"))||[pedidoInicial];
 let temporal=[];
 let categoriaActiva={minorista:"CAMISETAS",mayorista6:"CAMISETAS",mayorista12:"CAMISETAS",mayorista36:"CAMISETAS"};
 
 document.getElementById("fechaPedido").valueAsDate=new Date();
 
 function guardar(){
-localStorage.setItem("importb2b_pedidos_final_v1",JSON.stringify(pedidos));
-localStorage.setItem("importb2b_margenes_final",JSON.stringify(margenes));
+localStorage.setItem("importb2b_pedidos_v20",JSON.stringify(pedidos));
+localStorage.setItem("importb2b_margenes_v20",JSON.stringify(margenes));
 }
 
 function money(n){return "$"+Math.round(n).toLocaleString("es-AR")}
@@ -327,6 +327,46 @@ document.getElementById("totalArs").innerText=money(totalArs);
 document.getElementById("gananciaMinorista").innerText=money(venta-totalArs);
 }
 
+function actualizarProducto(pedidoId,index,campo,valor){
+const pedido=pedidos.find(p=>p.id===pedidoId);
+const item=pedido.productos[index];
+
+if(campo==="cantidad") item.cantidad=parseInt(valor)||0;
+else if(campo==="originalUsd") item.originalUsd=parseFloat(valor)||0;
+else if(campo==="costoUsd"){
+item.costoUsd=parseFloat(valor)||0;
+item.costoArs=Math.round(item.costoUsd*item.dolar);
+}
+else if(campo==="dolar"){
+item.dolar=parseFloat(valor)||0;
+item.costoArs=Math.round(item.costoUsd*item.dolar);
+}
+else if(campo==="costoArs") item.costoArs=parseFloat(valor)||0;
+else item[campo]=valor;
+
+guardar();
+renderResumen();
+renderPrecios("minorista");
+renderPrecios("mayorista6");
+renderPrecios("mayorista12");
+renderPrecios("mayorista36");
+}
+
+function eliminarProducto(pedidoId,index){
+if(!confirm("¿Eliminar este producto del pedido?"))return;
+const pedido=pedidos.find(p=>p.id===pedidoId);
+pedido.productos.splice(index,1);
+guardar();
+renderAll();
+}
+
+function eliminarPedido(pedidoId){
+if(!confirm("¿Eliminar pedido completo?"))return;
+pedidos=pedidos.filter(p=>p.id!==pedidoId);
+guardar();
+renderAll();
+}
+
 function renderPedidos(){
 const div=document.getElementById("listaPedidos");
 const q=document.getElementById("buscarPedidos").value.toLowerCase();
@@ -343,8 +383,33 @@ div.innerHTML+=`
 <div><span class="badge">${usd(totalUsd)}</span> <span class="badge">${money(totalArs)}</span></div>
 </div>
 <div class="body">
-<table><thead><tr><th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD original</th><th>USD real</th><th>ARS</th></tr></thead>
-<tbody>${p.productos.map(i=>`<tr><td>${i.categoria}</td><td>${i.producto}</td><td>${i.detalle}</td><td>${i.cantidad}</td><td>${usd(i.originalUsd||i.costoUsd)}</td><td>${usd(i.costoUsd)}</td><td>${money(i.costoArs)}</td></tr>`).join("")}</tbody></table>
+<button class="delete" onclick="event.stopPropagation();eliminarPedido(${p.id})">Eliminar pedido completo</button>
+<br><br>
+<table>
+<thead>
+<tr>
+<th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD original</th><th>USD real</th><th>Dólar</th><th>ARS</th><th>Acción</th>
+</tr>
+</thead>
+<tbody>
+${p.productos.map((i,index)=>`
+<tr>
+<td>
+<select onchange="actualizarProducto(${p.id},${index},'categoria',this.value)">
+${categorias.map(c=>`<option ${i.categoria===c?'selected':''}>${c}</option>`).join("")}
+</select>
+</td>
+<td><input value="${i.producto}" oninput="actualizarProducto(${p.id},${index},'producto',this.value)"></td>
+<td><input value="${i.detalle}" oninput="actualizarProducto(${p.id},${index},'detalle',this.value)"></td>
+<td><input type="number" value="${i.cantidad}" oninput="actualizarProducto(${p.id},${index},'cantidad',this.value)"></td>
+<td><input type="number" step="0.01" value="${Number(i.originalUsd||i.costoUsd).toFixed(2)}" oninput="actualizarProducto(${p.id},${index},'originalUsd',this.value)"></td>
+<td><input type="number" step="0.01" value="${Number(i.costoUsd).toFixed(2)}" oninput="actualizarProducto(${p.id},${index},'costoUsd',this.value)"></td>
+<td><input type="number" value="${i.dolar}" oninput="actualizarProducto(${p.id},${index},'dolar',this.value)"></td>
+<td><input type="number" value="${Math.round(i.costoArs)}" oninput="actualizarProducto(${p.id},${index},'costoArs',this.value)"></td>
+<td><button class="delete" onclick="eliminarProducto(${p.id},${index})">Eliminar</button></td>
+</tr>`).join("")}
+</tbody>
+</table>
 </div></div>`;
 });
 }
