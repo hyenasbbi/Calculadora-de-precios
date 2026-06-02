@@ -1,2 +1,3 @@
-# Calculadora-de-precios
-Calculo remeras
+# Gestora de pedidos y Costos
+Calculo de ventas
+
