@@ -4,487 +4,69 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IMPORTB2B - Gestión de Stock</title>
-
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#0d0f10;color:#fff}
-header{background:#111214;border-bottom:3px solid #e50914;padding:20px}
-.logo{font-size:32px;font-weight:900}.logo span{color:#e50914}
-.container{padding:18px}
-.panel,.box{background:#181a1d;border:1px solid #2a2c30;border-radius:14px;padding:16px;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
-label{font-size:13px;color:#ccc;display:block;margin-bottom:5px}
-input,select{width:100%;padding:9px;border:none;border-radius:8px;font-size:14px}
-button{border:none;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer;color:#fff;background:#e50914}
-button.green{background:#00c853}button.dark{background:#25272b}button.delete{background:#b00020}
-.tabs,.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.tab-btn,.cat-btn{background:#25272b}.active-btn{background:#e50914!important}
-.tab{display:none}.tab.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.card{background:#222428;padding:10px;border-radius:10px;text-align:center;font-size:13px}
-.card strong{display:block;margin-top:5px;font-size:17px}
-table{width:100%;border-collapse:collapse;background:#181a1d;border-radius:12px;overflow:hidden}
-th,td{padding:8px;text-align:center;border-bottom:1px solid #303236;font-size:12px}
-th{background:#24262a}
-td input,td select{min-width:95px}
-.order,.drop{border:1px solid #303236;border-radius:12px;margin-bottom:12px;overflow:hidden}
-.head{background:#24262a;padding:13px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center}
-.body{display:none;padding:13px;background:#181a1d}.order.active .body,.drop.active .body{display:block}
-.badge{background:#e50914;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:bold}
-.search{margin-bottom:12px}
-@media(max-width:768px){.container{padding:10px}th,td{font-size:11px;padding:6px}}
+:root{--bg:#0d0f10;--panel:#181a1d;--panel2:#222428;--line:#2f3237;--red:#e50914;--red2:#b00020;--green:#13c46b;--gold:#d6a83a;--text:#fff;--muted:#c8c8c8}
+*{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden}body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:#111214;border-bottom:3px solid var(--red);padding:18px;position:sticky;top:0;z-index:20}.logo{font-size:30px;font-weight:900;line-height:1}.logo span{color:var(--red)}
+.container{width:100%;max-width:1400px;margin:0 auto;padding:16px}.panel,.drop{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px;width:100%}
+h2{margin:0 0 14px;font-size:22px}h3{margin:0 0 10px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
+input,select,textarea{width:100%;max-width:100%;padding:10px;border:none;border-radius:9px;font-size:14px}button{border:none;border-radius:9px;padding:10px 13px;font-weight:bold;cursor:pointer;color:#fff;background:var(--red);white-space:nowrap}button.green{background:var(--green)}button.dark{background:#25272b}button.delete{background:var(--red2)}
+.tabs,.cats{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;-webkit-overflow-scrolling:touch}.tab-btn,.cat-btn{background:#25272b;flex:0 0 auto}.active-btn{background:var(--red)!important}.tab{display:none}.tab.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.card{background:var(--panel2);padding:12px;border-radius:12px;text-align:center;font-size:13px;min-height:78px;display:flex;flex-direction:column;justify-content:center;border:1px solid transparent}.card strong{display:block;margin-top:5px;font-size:18px;line-height:1.15}.card.clickable{cursor:pointer}.card.greenish{border-color:rgba(19,196,107,.45);box-shadow:0 0 0 1px rgba(19,196,107,.15) inset}.card.goldish{border-color:rgba(214,168,58,.55);box-shadow:0 0 0 1px rgba(214,168,58,.12) inset}.card.redish{border-color:rgba(229,9,20,.55);box-shadow:0 0 0 1px rgba(229,9,20,.12) inset}
+.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:12px;overflow:hidden}th,td{padding:8px;text-align:center;border-bottom:1px solid #303236;font-size:12px;vertical-align:middle}th{background:#24262a}td input,td select{min-width:92px}
+.order,.expense-card,.stock-cat{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;background:#15171a}.head{background:#24262a;padding:12px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center}.body{display:none;padding:12px;background:var(--panel)}.order.active .body,.drop.active .body,.expense-card.active .body,.stock-cat.active .body{display:block}.badge{background:var(--red);padding:4px 8px;border-radius:999px;font-size:12px;font-weight:bold;display:inline-block;margin-top:4px}.search{margin-bottom:12px}.chart{display:grid;gap:8px}.bar-row{display:grid;grid-template-columns:120px 1fr 95px;gap:8px;align-items:center;font-size:13px}.bar-track{background:#2b2e33;border-radius:99px;overflow:hidden;height:12px}.bar-fill{height:12px;background:var(--red)}.muted{color:#b7b7b7;font-size:12px}
+@media(max-width:900px){.container{padding:12px}.logo{font-size:26px}.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}.head{align-items:flex-start;flex-direction:column}}
+@media(max-width:600px){header{padding:14px}.logo{font-size:23px}.container{padding:10px}h2{font-size:20px}.panel,.drop{padding:12px;border-radius:13px}.grid{grid-template-columns:1fr 1fr;gap:8px}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:10px;min-height:68px;font-size:12px}.card strong{font-size:15px}input,select,textarea{padding:9px;font-size:14px}button{padding:9px 11px}.tabs,.cats{gap:7px}.tab-btn,.cat-btn{font-size:13px}.table-wrap table,.table-wrap thead,.table-wrap tbody,.table-wrap th,.table-wrap td,.table-wrap tr{display:block;width:100%}.table-wrap thead{display:none}.table-wrap tr{background:#1d1f23;margin-bottom:10px;border:1px solid #303236;border-radius:12px;padding:9px}.table-wrap td{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:right;border-bottom:1px solid #303236;padding:8px 0;font-size:13px}.table-wrap td:last-child{border-bottom:none}.table-wrap td::before{content:attr(data-label);font-weight:bold;color:#aaa;text-align:left;flex:1}.table-wrap td input,.table-wrap td select{min-width:0;width:62%}.bar-row{grid-template-columns:1fr;gap:4px}}
+@media(max-width:390px){.cards,.grid{grid-template-columns:1fr}.card strong{font-size:16px}}
 </style>
 </head>
-
 <body>
-
 <header><div class="logo">IMPORT<span>B2B</span></div></header>
-
 <div class="container">
-
-<div class="panel">
-<h2>Resumen general</h2>
-<div class="cards">
-<div class="card">Stock total<strong id="stockTotal">0</strong></div>
-<div class="card">Inversión USD total<strong id="totalUsd">USD 0</strong></div>
-<div class="card">Costo stock ARS total<strong id="totalArs">$0</strong></div>
-<div class="card">Ganancia esperada minorista<strong id="gananciaMinorista">$0</strong></div>
+<div class="panel"><h2>Resumen general</h2><div class="cards"><div class="card">Stock total<strong id="stockTotal">0</strong></div><div class="card greenish clickable" onclick="openTabById('pedidos')">Inversión USD total<strong id="totalUsd">USD 0</strong></div><div class="card clickable" onclick="openTabById('pedidos')">Costo stock ARS total<strong id="totalArs">$0</strong></div><div class="card goldish">Ganancia esperada minorista<strong id="gananciaMinorista">$0</strong></div><div class="card redish clickable" onclick="openTabById('gastos')">Gastos registrados<strong id="totalGastos">$0</strong></div></div></div>
+<div class="drop" id="margenesBox"><div class="head" onclick="toggleBox('margenesBox')"><strong>Márgenes por categoría</strong><span class="badge">Editar</span></div><div class="body"><div class="table-wrap"><table><thead><tr><th>Categoría</th><th>Minorista %</th><th>Mayorista 6 %</th><th>Mayorista 12 %</th><th>Mayorista 36 %</th></tr></thead><tbody id="tablaMargenes"></tbody></table></div><br><button class="green" onclick="guardarMargenes()">Guardar cambios</button></div></div>
+<div class="drop" id="nuevoPedidoBox"><div class="head" onclick="toggleBox('nuevoPedidoBox')"><strong>Nuevo pedido</strong><span class="badge">Cargar stock</span></div><div class="body"><div class="grid"><div><label>Fecha</label><input type="date" id="fechaPedido"></div><div><label>Dólar</label><input type="number" id="dolarNuevo" value="1480"></div><div><label>Categoría</label><select id="categoriaNuevo"></select></div><div><label>Producto</label><input id="productoNuevo" placeholder="Ej: Argentina 2006"></div><div><label>Detalle</label><input id="detalleNuevo" placeholder="Ej: Messi"></div><div><label>Costo USD real</label><input type="number" step="0.01" id="costoUsdNuevo"></div><div><label>Cantidad</label><input type="number" id="cantidadNuevo" value="1"></div></div><br><button class="green" onclick="agregarTemporal()">Agregar al pedido</button><br><br><h3>Pedido en carga</h3><div id="pedidoTemporal"></div><br><button class="delete" onclick="finalizarPedido()">Finalizar pedido</button></div></div>
+<div class="drop" id="gastoBox"><div class="head" onclick="toggleBox('gastoBox')"><strong>Registrar gasto</strong><span class="badge">Impuestos / envíos / materia prima</span></div><div class="body"><div class="grid"><div><label>Fecha</label><input type="date" id="fechaGasto"></div><div><label>Tipo de gasto</label><select id="tipoGasto"><option>Impuesto</option><option>Envío</option><option>Materia prima</option><option>Proveedor</option><option>Packaging</option><option>Publicidad</option><option>Otro</option></select></div><div><label>Proveedor / origen</label><input id="proveedorGasto" placeholder="Ej: Aduana / proveedor / correo"></div><div><label>Importe ARS</label><input type="number" id="importeGasto" placeholder="Ej: 55000"></div><div><label>Detalle</label><input id="detalleGasto" placeholder="Ej: envío pedido junio"></div></div><br><button class="green" onclick="agregarGasto()">Guardar gasto</button></div></div>
+<div class="tabs"><button class="tab-btn active-btn" onclick="openTab('pedidos',this)">Pedidos</button><button class="tab-btn" onclick="openTab('minorista',this)">Minorista</button><button class="tab-btn" onclick="openTab('mayorista6',this)">Mayorista 6</button><button class="tab-btn" onclick="openTab('mayorista12',this)">Mayorista 12</button><button class="tab-btn" onclick="openTab('mayorista36',this)">Mayorista 36</button><button class="tab-btn" onclick="openTab('gastos',this)">Gastos</button><button class="tab-btn" onclick="openTab('csv',this)">CSV</button></div>
+<div id="pedidos" class="tab active"><div class="panel"><h2>Pedidos registrados</h2><input class="search" id="buscarPedidos" placeholder="Buscar por fecha, producto, detalle, categoría o pedido..." oninput="renderPedidos()"><div id="listaPedidos"></div></div></div>
+<div id="minorista" class="tab"><div class="panel"><h2>Stock y precios minoristas</h2><input class="search" id="buscarMinorista" placeholder="Buscar producto..." oninput="renderPrecios('minorista')"><div id="catsMinorista" class="cats"></div><div id="tablaMinorista"></div></div></div>
+<div id="mayorista6" class="tab"><div class="panel"><h2>Stock y precios mayorista 6 prendas</h2><input class="search" id="buscarMayorista6" placeholder="Buscar producto..." oninput="renderPrecios('mayorista6')"><div id="catsMayorista6" class="cats"></div><div id="tablaMayorista6"></div></div></div>
+<div id="mayorista12" class="tab"><div class="panel"><h2>Stock y precios mayorista 12 prendas</h2><input class="search" id="buscarMayorista12" placeholder="Buscar producto..." oninput="renderPrecios('mayorista12')"><div id="catsMayorista12" class="cats"></div><div id="tablaMayorista12"></div></div></div>
+<div id="mayorista36" class="tab"><div class="panel"><h2>Stock y precios mayorista 36 prendas</h2><input class="search" id="buscarMayorista36" placeholder="Buscar producto..." oninput="renderPrecios('mayorista36')"><div id="catsMayorista36" class="cats"></div><div id="tablaMayorista36"></div></div></div>
+<div id="gastos" class="tab"><div class="panel"><h2>Registro de gastos</h2><input class="search" id="buscarGastos" placeholder="Buscar por fecha, tipo, proveedor o detalle..." oninput="renderGastos()"><div id="graficoGastos" class="chart"></div><br><div id="listaGastos"></div></div></div>
+<div id="csv" class="tab"><div class="panel"><h2>Exportar / Importar</h2><button class="green" onclick="exportarCSV()">Exportar stock CSV</button><button class="dark" onclick="exportarGastosCSV()">Exportar gastos CSV</button><br><br><label>Importar CSV: categoria,producto,detalle,cantidad,costoUsd,dolar,fecha</label><input type="file" accept=".csv" onchange="importarCSV(event)"></div></div>
 </div>
-</div>
-
-<div class="drop" id="margenesBox">
-<div class="head" onclick="toggleBox('margenesBox')">
-<strong>Márgenes por categoría</strong><span class="badge">Editar</span>
-</div>
-<div class="body">
-<table>
-<thead>
-<tr>
-<th>Categoría</th><th>Minorista %</th><th>Mayorista 6 %</th><th>Mayorista 12 %</th><th>Mayorista 36 %</th>
-</tr>
-</thead>
-<tbody id="tablaMargenes"></tbody>
-</table>
-<br>
-<button class="green" onclick="guardarMargenes()">Guardar cambios</button>
-</div>
-</div>
-
-<div class="panel">
-<h2>Nuevo pedido</h2>
-<div class="grid">
-<div><label>Fecha</label><input type="date" id="fechaPedido"></div>
-<div><label>Dólar</label><input type="number" id="dolarNuevo" value="1480"></div>
-<div><label>Categoría</label><select id="categoriaNuevo"></select></div>
-<div><label>Producto</label><input id="productoNuevo" placeholder="Ej: Argentina 2006"></div>
-<div><label>Detalle</label><input id="detalleNuevo" placeholder="Ej: Messi"></div>
-<div><label>Costo USD real</label><input type="number" step="0.01" id="costoUsdNuevo"></div>
-<div><label>Cantidad</label><input type="number" id="cantidadNuevo" value="1"></div>
-</div>
-<br>
-<button class="green" onclick="agregarTemporal()">Agregar al pedido</button>
-<br><br>
-<h3>Pedido en carga</h3>
-<div id="pedidoTemporal"></div>
-<br>
-<button class="delete" onclick="finalizarPedido()">Finalizar pedido</button>
-</div>
-
-<div class="tabs">
-<button class="tab-btn active-btn" onclick="openTab('pedidos',this)">Pedidos</button>
-<button class="tab-btn" onclick="openTab('minorista',this)">Minorista</button>
-<button class="tab-btn" onclick="openTab('mayorista6',this)">Mayorista 6</button>
-<button class="tab-btn" onclick="openTab('mayorista12',this)">Mayorista 12</button>
-<button class="tab-btn" onclick="openTab('mayorista36',this)">Mayorista 36</button>
-<button class="tab-btn" onclick="openTab('csv',this)">CSV</button>
-</div>
-
-<div id="pedidos" class="tab active">
-<div class="panel">
-<h2>Pedidos registrados</h2>
-<input class="search" id="buscarPedidos" placeholder="Buscar por fecha, producto, detalle, categoría o pedido..." oninput="renderPedidos()">
-<div id="listaPedidos"></div>
-</div>
-</div>
-
-<div id="minorista" class="tab">
-<div class="panel">
-<h2>Stock y precios minoristas</h2>
-<input class="search" id="buscarMinorista" placeholder="Buscar producto..." oninput="renderPrecios('minorista')">
-<div id="catsMinorista" class="cats"></div>
-<div id="tablaMinorista"></div>
-</div>
-</div>
-
-<div id="mayorista6" class="tab">
-<div class="panel">
-<h2>Stock y precios mayorista 6 prendas</h2>
-<input class="search" id="buscarMayorista6" placeholder="Buscar producto..." oninput="renderPrecios('mayorista6')">
-<div id="catsMayorista6" class="cats"></div>
-<div id="tablaMayorista6"></div>
-</div>
-</div>
-
-<div id="mayorista12" class="tab">
-<div class="panel">
-<h2>Stock y precios mayorista 12 prendas</h2>
-<input class="search" id="buscarMayorista12" placeholder="Buscar producto..." oninput="renderPrecios('mayorista12')">
-<div id="catsMayorista12" class="cats"></div>
-<div id="tablaMayorista12"></div>
-</div>
-</div>
-
-<div id="mayorista36" class="tab">
-<div class="panel">
-<h2>Stock y precios mayorista 36 prendas</h2>
-<input class="search" id="buscarMayorista36" placeholder="Buscar producto..." oninput="renderPrecios('mayorista36')">
-<div id="catsMayorista36" class="cats"></div>
-<div id="tablaMayorista36"></div>
-</div>
-</div>
-
-<div id="csv" class="tab">
-<div class="panel">
-<h2>Exportar / Importar</h2>
-<button class="green" onclick="exportarCSV()">Exportar stock CSV</button>
-<br><br>
-<label>Importar CSV: categoria,producto,detalle,cantidad,costoUsd,dolar,fecha</label>
-<input type="file" accept=".csv" onchange="importarCSV(event)">
-</div>
-</div>
-
-</div>
-
 <script>
-const FACTOR_PEDIDO_1 = 455 / 481;
-
-const categorias=[
-"CAMISETAS","SHORES IMPORTADOS","CONJUNTOS","CAMPERAS","PERFUMES MASC",
-"PERFUMES FEM","VAPERS","STANLEY","JBL","COSMETICOS","ACCESORIOS","FUNDAS","OTROS"
-];
-
-let margenes=JSON.parse(localStorage.getItem("importb2b_margenes_v20"))||{
-"CAMISETAS":{minorista:90,mayorista6:45,mayorista12:35,mayorista36:25},
-"SHORES IMPORTADOS":{minorista:80,mayorista6:40,mayorista12:30,mayorista36:22},
-"CONJUNTOS":{minorista:80,mayorista6:40,mayorista12:30,mayorista36:22},
-"CAMPERAS":{minorista:70,mayorista6:35,mayorista12:28,mayorista36:20},
-"PERFUMES MASC":{minorista:70,mayorista6:35,mayorista12:28,mayorista36:20},
-"PERFUMES FEM":{minorista:70,mayorista6:35,mayorista12:28,mayorista36:20},
-"VAPERS":{minorista:60,mayorista6:30,mayorista12:22,mayorista36:15},
-"STANLEY":{minorista:65,mayorista6:30,mayorista12:24,mayorista36:18},
-"JBL":{minorista:60,mayorista6:28,mayorista12:22,mayorista36:16},
-"COSMETICOS":{minorista:75,mayorista6:35,mayorista12:25,mayorista36:18},
-"ACCESORIOS":{minorista:85,mayorista6:40,mayorista12:30,mayorista36:22},
-"FUNDAS":{minorista:90,mayorista6:45,mayorista12:35,mayorista36:25},
-"OTROS":{minorista:70,mayorista6:35,mayorista12:25,mayorista36:18}
-};
-
-function real(original){return original*FACTOR_PEDIDO_1}
-function ars(usd,dolar=1480){return Math.round(usd*dolar)}
-
-const pedidoInicial={
-id:1,
-fecha:"2026-06-01",
-nota:"Pedido #1 computado: inversión real USD 455. Short Messi #10 bonificado excluido del stock y del costo.",
-productos:[
-{categoria:"CAMISETAS",producto:"Argentina femenina",detalle:"Sin nombre",cantidad:2,originalUsd:14,costoUsd:real(14),dolar:1480},
-{categoria:"CONJUNTOS",producto:"Conjunto Argentina",detalle:"Sin nombre",cantidad:1,originalUsd:12,costoUsd:real(12),dolar:1480},
-{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#24",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
-{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#5",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
-{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:2,originalUsd:23,costoUsd:real(23),dolar:1480},
-{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
-{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
-{categoria:"CAMISETAS",producto:"Argentina manga larga celeste/blanca 2006",detalle:"Messi",cantidad:2,originalUsd:22,costoUsd:real(22),dolar:1480},
-{categoria:"CAMISETAS",producto:"Argentina azul 2006",detalle:"Riquelme",cantidad:1,originalUsd:17,costoUsd:real(17),dolar:1480},
-{categoria:"CAMISETAS",producto:"Argentina azul 2006",detalle:"Messi",cantidad:1,originalUsd:18,costoUsd:real(18),dolar:1480},
-{categoria:"CAMISETAS",producto:"Canada Portero",detalle:"Sin nombre",cantidad:1,originalUsd:20,costoUsd:real(20),dolar:1480},
-{categoria:"CAMPERAS",producto:"Campera Manchester",detalle:"Sin nombre",cantidad:1,originalUsd:35,costoUsd:real(35),dolar:1480},
-{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Paredes",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
-{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,originalUsd:19,costoUsd:real(19),dolar:1480},
-{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},
-{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,originalUsd:20,costoUsd:real(20),dolar:1480},
-{categoria:"CAMISETAS",producto:"Argentina celeste/blanca",detalle:"Riquelme",cantidad:1,originalUsd:17,costoUsd:real(17),dolar:1480},
-{categoria:"CAMISETAS",producto:"Como Naranja",detalle:"Nico Paz",cantidad:1,originalUsd:17,costoUsd:real(17),dolar:1480},
-{categoria:"CAMISETAS",producto:"New Castle Retro",detalle:"Sin nombre",cantidad:1,originalUsd:19,costoUsd:real(19),dolar:1480},
-{categoria:"CAMISETAS",producto:"Corinthians Negra",detalle:"Sin nombre",cantidad:1,originalUsd:20,costoUsd:real(20),dolar:1480},
-{categoria:"CAMISETAS",producto:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},
-{categoria:"CAMISETAS",producto:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,originalUsd:16,costoUsd:real(16),dolar:1480}
-]
-};
-
+const FACTOR_PEDIDO_1=455/481;
+const categorias=["CAMISETAS","SHORES IMPORTADOS","CONJUNTOS","CAMPERAS","PERFUMES MASC","PERFUMES FEM","VAPERS","STANLEY","JBL","COSMETICOS","ACCESORIOS","FUNDAS","OTROS"];
+let margenes=JSON.parse(localStorage.getItem("importb2b_margenes_v30"))||{"CAMISETAS":{minorista:90,mayorista6:45,mayorista12:35,mayorista36:25},"SHORES IMPORTADOS":{minorista:80,mayorista6:40,mayorista12:30,mayorista36:22},"CONJUNTOS":{minorista:80,mayorista6:40,mayorista12:30,mayorista36:22},"CAMPERAS":{minorista:70,mayorista6:35,mayorista12:28,mayorista36:20},"PERFUMES MASC":{minorista:70,mayorista6:35,mayorista12:28,mayorista36:20},"PERFUMES FEM":{minorista:70,mayorista6:35,mayorista12:28,mayorista36:20},"VAPERS":{minorista:60,mayorista6:30,mayorista12:22,mayorista36:15},"STANLEY":{minorista:65,mayorista6:30,mayorista12:24,mayorista36:18},"JBL":{minorista:60,mayorista6:28,mayorista12:22,mayorista36:16},"COSMETICOS":{minorista:75,mayorista6:35,mayorista12:25,mayorista36:18},"ACCESORIOS":{minorista:85,mayorista6:40,mayorista12:30,mayorista36:22},"FUNDAS":{minorista:90,mayorista6:45,mayorista12:35,mayorista36:25},"OTROS":{minorista:70,mayorista6:35,mayorista12:25,mayorista36:18}};
+function real(o){return o*FACTOR_PEDIDO_1}function ars(u,d=1480){return Math.round(u*d)}
+const pedidoInicial={id:1,fecha:"2026-06-01",nota:"Pedido #1 computado: inversión real USD 455. Short Messi #10 bonificado excluido del stock y del costo.",productos:[
+{categoria:"CAMISETAS",producto:"Argentina femenina",detalle:"Sin nombre",cantidad:2,originalUsd:14,costoUsd:real(14),dolar:1480},{categoria:"CONJUNTOS",producto:"Conjunto Argentina",detalle:"Sin nombre",cantidad:1,originalUsd:12,costoUsd:real(12),dolar:1480},{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#24",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},{categoria:"SHORES IMPORTADOS",producto:"Short Argentina",detalle:"#5",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:2,originalUsd:23,costoUsd:real(23),dolar:1480},{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},{categoria:"CAMISETAS",producto:"Argentina manga larga retro",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},{categoria:"CAMISETAS",producto:"Argentina manga larga celeste/blanca 2006",detalle:"Messi",cantidad:2,originalUsd:22,costoUsd:real(22),dolar:1480},{categoria:"CAMISETAS",producto:"Argentina azul 2006",detalle:"Riquelme",cantidad:1,originalUsd:17,costoUsd:real(17),dolar:1480},{categoria:"CAMISETAS",producto:"Argentina azul 2006",detalle:"Messi",cantidad:1,originalUsd:18,costoUsd:real(18),dolar:1480},{categoria:"CAMISETAS",producto:"Canada Portero",detalle:"Sin nombre",cantidad:1,originalUsd:20,costoUsd:real(20),dolar:1480},{categoria:"CAMPERAS",producto:"Campera Manchester",detalle:"Sin nombre",cantidad:1,originalUsd:35,costoUsd:real(35),dolar:1480},{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Paredes",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,originalUsd:19,costoUsd:real(19),dolar:1480},{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Messi",cantidad:1,originalUsd:22,costoUsd:real(22),dolar:1480},{categoria:"CAMISETAS",producto:"Suplente Argentina manga larga",detalle:"Sin nombre",cantidad:1,originalUsd:20,costoUsd:real(20),dolar:1480},{categoria:"CAMISETAS",producto:"Argentina celeste/blanca",detalle:"Riquelme",cantidad:1,originalUsd:17,costoUsd:real(17),dolar:1480},{categoria:"CAMISETAS",producto:"Como Naranja",detalle:"Nico Paz",cantidad:1,originalUsd:17,costoUsd:real(17),dolar:1480},{categoria:"CAMISETAS",producto:"New Castle Retro",detalle:"Sin nombre",cantidad:1,originalUsd:19,costoUsd:real(19),dolar:1480},{categoria:"CAMISETAS",producto:"Corinthians Negra",detalle:"Sin nombre",cantidad:1,originalUsd:20,costoUsd:real(20),dolar:1480},{categoria:"CAMISETAS",producto:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,originalUsd:15,costoUsd:real(15),dolar:1480},{categoria:"CAMISETAS",producto:"Argentina Suplente",detalle:"Sin nombre",cantidad:1,originalUsd:16,costoUsd:real(16),dolar:1480}]};
 pedidoInicial.productos.forEach(p=>p.costoArs=ars(p.costoUsd,p.dolar));
-
-let pedidos=JSON.parse(localStorage.getItem("importb2b_pedidos_v20"))||[pedidoInicial];
-let temporal=[];
-let categoriaActiva={minorista:"CAMISETAS",mayorista6:"CAMISETAS",mayorista12:"CAMISETAS",mayorista36:"CAMISETAS"};
-
-document.getElementById("fechaPedido").valueAsDate=new Date();
-
-function guardar(){
-localStorage.setItem("importb2b_pedidos_v20",JSON.stringify(pedidos));
-localStorage.setItem("importb2b_margenes_v20",JSON.stringify(margenes));
-}
-
-function money(n){return "$"+Math.round(n).toLocaleString("es-AR")}
-function usd(n){return "USD "+Number(n).toFixed(2)}
-function redondear500(n){return Math.ceil(n/500)*500}
-
-function cargarCategorias(){
-document.getElementById("categoriaNuevo").innerHTML=categorias.map(c=>`<option>${c}</option>`).join("");
-}
-
-function toggleBox(id){document.getElementById(id).classList.toggle("active")}
-
-function renderMargenes(){
-document.getElementById("tablaMargenes").innerHTML=categorias.map(c=>`
-<tr>
-<td>${c}</td>
-<td><input type="number" value="${margenes[c].minorista}" onchange="margenes['${c}'].minorista=parseFloat(this.value)||0"></td>
-<td><input type="number" value="${margenes[c].mayorista6}" onchange="margenes['${c}'].mayorista6=parseFloat(this.value)||0"></td>
-<td><input type="number" value="${margenes[c].mayorista12}" onchange="margenes['${c}'].mayorista12=parseFloat(this.value)||0"></td>
-<td><input type="number" value="${margenes[c].mayorista36}" onchange="margenes['${c}'].mayorista36=parseFloat(this.value)||0"></td>
-</tr>`).join("");
-}
-
-function guardarMargenes(){
-guardar();
-document.getElementById("margenesBox").classList.remove("active");
-renderAll();
-}
-
-function openTab(id,btn){
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active-btn"));
-document.getElementById(id).classList.add("active");
-btn.classList.add("active-btn");
-renderAll();
-}
-
-function agregarTemporal(){
-const fecha=document.getElementById("fechaPedido").value;
-const dolar=parseFloat(document.getElementById("dolarNuevo").value);
-const categoria=document.getElementById("categoriaNuevo").value;
-const producto=document.getElementById("productoNuevo").value.trim();
-const detalle=document.getElementById("detalleNuevo").value.trim()||"Sin detalle";
-const costoUsd=parseFloat(document.getElementById("costoUsdNuevo").value);
-const cantidad=parseInt(document.getElementById("cantidadNuevo").value);
-if(!fecha||!producto||isNaN(dolar)||isNaN(costoUsd)||isNaN(cantidad)||cantidad<=0){alert("Completá todos los datos.");return}
-temporal.push({categoria,producto,detalle,cantidad,originalUsd:costoUsd,costoUsd,dolar,costoArs:Math.round(costoUsd*dolar)});
-["productoNuevo","detalleNuevo","costoUsdNuevo"].forEach(id=>document.getElementById(id).value="");
-document.getElementById("cantidadNuevo").value=1;
-renderTemporal();
-}
-
-function renderTemporal(){
-const div=document.getElementById("pedidoTemporal");
-if(!temporal.length){div.innerHTML="<p>No hay productos cargados.</p>";return}
-let totalUsd=temporal.reduce((a,i)=>a+i.costoUsd*i.cantidad,0);
-let totalArs=temporal.reduce((a,i)=>a+i.costoArs*i.cantidad,0);
-div.innerHTML=`
-<table><thead><tr><th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD</th><th>ARS</th><th></th></tr></thead>
-<tbody>${temporal.map((i,x)=>`<tr><td>${i.categoria}</td><td>${i.producto}</td><td>${i.detalle}</td><td>${i.cantidad}</td><td>${usd(i.costoUsd)}</td><td>${money(i.costoArs)}</td><td><button class="delete" onclick="temporal.splice(${x},1);renderTemporal()">Eliminar</button></td></tr>`).join("")}</tbody></table>
-<br><div class="cards"><div class="card">Pedido USD<strong>${usd(totalUsd)}</strong></div><div class="card">Pedido ARS<strong>${money(totalArs)}</strong></div></div>`;
-}
-
-function finalizarPedido(){
-if(!temporal.length){alert("Cargá al menos un producto.");return}
-const nuevoId=pedidos.length?Math.max(...pedidos.map(p=>p.id))+1:1;
-pedidos.push({id:nuevoId,fecha:document.getElementById("fechaPedido").value,productos:[...temporal]});
-temporal=[];
-guardar();
-renderAll();
-alert("Pedido #"+nuevoId+" finalizado.");
-}
-
-function productosStock(){
-let stock=[];
-pedidos.forEach(p=>p.productos.forEach(i=>stock.push({...i,pedido:p.id,fecha:p.fecha})));
-return stock;
-}
-
-function stockAgrupado(){
-const g={};
-productosStock().forEach(i=>{
-const key=`${i.categoria}|${i.producto}|${i.detalle}`;
-if(!g[key])g[key]={categoria:i.categoria,producto:i.producto,detalle:i.detalle,cantidad:0,totalUsd:0,totalArs:0,compras:[]};
-g[key].cantidad+=i.cantidad;
-g[key].totalUsd+=i.costoUsd*i.cantidad;
-g[key].totalArs+=i.costoArs*i.cantidad;
-g[key].compras.push(i);
-});
-return Object.values(g).map(i=>({...i,costoPromedioUsd:i.totalUsd/i.cantidad,costoPromedioArs:i.totalArs/i.cantidad}));
-}
-
-function renderResumen(){
-const s=stockAgrupado();
-const totalCant=s.reduce((a,i)=>a+i.cantidad,0);
-const totalUsd=s.reduce((a,i)=>a+i.totalUsd,0);
-const totalArs=s.reduce((a,i)=>a+i.totalArs,0);
-const venta=s.reduce((a,i)=>a+redondear500(i.costoPromedioArs*(1+(margenes[i.categoria]?.minorista||0)/100))*i.cantidad,0);
-document.getElementById("stockTotal").innerText=totalCant;
-document.getElementById("totalUsd").innerText=usd(totalUsd);
-document.getElementById("totalArs").innerText=money(totalArs);
-document.getElementById("gananciaMinorista").innerText=money(venta-totalArs);
-}
-
-function actualizarProducto(pedidoId,index,campo,valor){
-const pedido=pedidos.find(p=>p.id===pedidoId);
-const item=pedido.productos[index];
-
-if(campo==="cantidad") item.cantidad=parseInt(valor)||0;
-else if(campo==="originalUsd") item.originalUsd=parseFloat(valor)||0;
-else if(campo==="costoUsd"){
-item.costoUsd=parseFloat(valor)||0;
-item.costoArs=Math.round(item.costoUsd*item.dolar);
-}
-else if(campo==="dolar"){
-item.dolar=parseFloat(valor)||0;
-item.costoArs=Math.round(item.costoUsd*item.dolar);
-}
-else if(campo==="costoArs") item.costoArs=parseFloat(valor)||0;
-else item[campo]=valor;
-
-guardar();
-renderResumen();
-renderPrecios("minorista");
-renderPrecios("mayorista6");
-renderPrecios("mayorista12");
-renderPrecios("mayorista36");
-}
-
-function eliminarProducto(pedidoId,index){
-if(!confirm("¿Eliminar este producto del pedido?"))return;
-const pedido=pedidos.find(p=>p.id===pedidoId);
-pedido.productos.splice(index,1);
-guardar();
-renderAll();
-}
-
-function eliminarPedido(pedidoId){
-if(!confirm("¿Eliminar pedido completo?"))return;
-pedidos=pedidos.filter(p=>p.id!==pedidoId);
-guardar();
-renderAll();
-}
-
-function renderPedidos(){
-const div=document.getElementById("listaPedidos");
-const q=document.getElementById("buscarPedidos").value.toLowerCase();
-div.innerHTML="";
-pedidos.forEach(p=>{
-const texto=(`#${p.id} ${p.fecha} ${JSON.stringify(p)}`).toLowerCase();
-if(q&&!texto.includes(q))return;
-const totalUsd=p.productos.reduce((a,i)=>a+i.costoUsd*i.cantidad,0);
-const totalArs=p.productos.reduce((a,i)=>a+i.costoArs*i.cantidad,0);
-div.innerHTML+=`
-<div class="order" data-id="${p.id}">
-<div class="head" onclick="togglePedido(${p.id})">
-<div><strong>Pedido #${p.id}</strong> — ${p.fecha}<br><small>${p.nota||""}</small></div>
-<div><span class="badge">${usd(totalUsd)}</span> <span class="badge">${money(totalArs)}</span></div>
-</div>
-<div class="body">
-<button class="delete" onclick="event.stopPropagation();eliminarPedido(${p.id})">Eliminar pedido completo</button>
-<br><br>
-<table>
-<thead>
-<tr>
-<th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD original</th><th>USD real</th><th>Dólar</th><th>ARS</th><th>Acción</th>
-</tr>
-</thead>
-<tbody>
-${p.productos.map((i,index)=>`
-<tr>
-<td>
-<select onchange="actualizarProducto(${p.id},${index},'categoria',this.value)">
-${categorias.map(c=>`<option ${i.categoria===c?'selected':''}>${c}</option>`).join("")}
-</select>
-</td>
-<td><input value="${i.producto}" oninput="actualizarProducto(${p.id},${index},'producto',this.value)"></td>
-<td><input value="${i.detalle}" oninput="actualizarProducto(${p.id},${index},'detalle',this.value)"></td>
-<td><input type="number" value="${i.cantidad}" oninput="actualizarProducto(${p.id},${index},'cantidad',this.value)"></td>
-<td><input type="number" step="0.01" value="${Number(i.originalUsd||i.costoUsd).toFixed(2)}" oninput="actualizarProducto(${p.id},${index},'originalUsd',this.value)"></td>
-<td><input type="number" step="0.01" value="${Number(i.costoUsd).toFixed(2)}" oninput="actualizarProducto(${p.id},${index},'costoUsd',this.value)"></td>
-<td><input type="number" value="${i.dolar}" oninput="actualizarProducto(${p.id},${index},'dolar',this.value)"></td>
-<td><input type="number" value="${Math.round(i.costoArs)}" oninput="actualizarProducto(${p.id},${index},'costoArs',this.value)"></td>
-<td><button class="delete" onclick="eliminarProducto(${p.id},${index})">Eliminar</button></td>
-</tr>`).join("")}
-</tbody>
-</table>
-</div></div>`;
-});
-}
-
-function togglePedido(id){
-document.querySelectorAll(".order").forEach(o=>{if(o.dataset.id!=id)o.classList.remove("active")});
-document.querySelector(`.order[data-id="${id}"]`).classList.toggle("active");
-}
-
-function setCategoria(tab,cat){categoriaActiva[tab]=cat;renderPrecios(tab)}
-
-function renderCats(tab){
-const map={minorista:"catsMinorista",mayorista6:"catsMayorista6",mayorista12:"catsMayorista12",mayorista36:"catsMayorista36"};
-document.getElementById(map[tab]).innerHTML=categorias.map(c=>`<button class="cat-btn ${categoriaActiva[tab]===c?'active-btn':''}" onclick="setCategoria('${tab}','${c}')">${c}</button>`).join("");
-}
-
-function renderPrecios(tab){
-renderCats(tab);
-const inputs={minorista:"buscarMinorista",mayorista6:"buscarMayorista6",mayorista12:"buscarMayorista12",mayorista36:"buscarMayorista36"};
-const tables={minorista:"tablaMinorista",mayorista6:"tablaMayorista6",mayorista12:"tablaMayorista12",mayorista36:"tablaMayorista36"};
-const q=document.getElementById(inputs[tab]).value.toLowerCase();
-const data=stockAgrupado().filter(i=>i.categoria===categoriaActiva[tab]&&(`${i.producto} ${i.detalle} ${i.categoria}`.toLowerCase().includes(q)));
-document.getElementById(tables[tab]).innerHTML=`
-<table><thead><tr><th>Producto</th><th>Detalle</th><th>Stock</th><th>Costo promedio</th><th>Venta sugerida</th><th>Venta redonda</th><th>Ganancia/unidad</th></tr></thead>
-<tbody>${data.map(i=>{
-const margen=margenes[i.categoria]?.[tab]||0;
-const venta=i.costoPromedioArs*(1+margen/100);
-const red=redondear500(venta);
-return `<tr><td>${i.producto}</td><td>${i.detalle}</td><td>${i.cantidad}</td><td>${money(i.costoPromedioArs)}</td><td>${money(venta)}</td><td><strong>${money(red)}</strong></td><td>${money(red-i.costoPromedioArs)}</td></tr>`;
-}).join("")}</tbody></table>`;
-}
-
-function exportarCSV(){
-const rows=[["pedido","fecha","categoria","producto","detalle","cantidad","originalUsd","costoUsd","dolar","costoArs"]];
-pedidos.forEach(p=>p.productos.forEach(i=>rows.push([p.id,p.fecha,i.categoria,i.producto,i.detalle,i.cantidad,i.originalUsd||i.costoUsd,i.costoUsd,i.dolar,i.costoArs])));
-const csv=rows.map(r=>r.join(",")).join("\n");
-const blob=new Blob([csv],{type:"text/csv"});
-const url=URL.createObjectURL(blob);
-const a=document.createElement("a");
-a.href=url;a.download="stock_importb2b.csv";a.click();URL.revokeObjectURL(url);
-}
-
-function importarCSV(e){
-const file=e.target.files[0];if(!file)return;
-const r=new FileReader();
-r.onload=function(ev){
-const lines=ev.target.result.split("\n").slice(1);
-const nuevoId=pedidos.length?Math.max(...pedidos.map(p=>p.id))+1:1;
-const productos=[];
-lines.forEach(line=>{
-const [categoria,producto,detalle,cantidad,costoUsd,dolar,fecha]=line.split(",");
-if(!producto)return;
-const c=parseFloat(costoUsd)||0,d=parseFloat(dolar)||1480;
-productos.push({categoria:categoria||"OTROS",producto,detalle:detalle||"Sin detalle",cantidad:parseInt(cantidad)||1,originalUsd:c,costoUsd:c,dolar:d,costoArs:Math.round(c*d)});
-});
-pedidos.push({id:nuevoId,fecha:new Date().toISOString().slice(0,10),productos});
-guardar();renderAll();alert("CSV importado como Pedido #"+nuevoId);
-};
-r.readAsText(file);
-}
-
-function renderAll(){
-renderMargenes();
-renderTemporal();
-renderResumen();
-renderPedidos();
-renderPrecios("minorista");
-renderPrecios("mayorista6");
-renderPrecios("mayorista12");
-renderPrecios("mayorista36");
-}
-
-cargarCategorias();
-renderAll();
+let pedidos=JSON.parse(localStorage.getItem("importb2b_pedidos_v30"))||[pedidoInicial];let gastos=JSON.parse(localStorage.getItem("importb2b_gastos_v30"))||[];let temporal=[];let categoriaActiva={minorista:"CAMISETAS",mayorista6:"CAMISETAS",mayorista12:"CAMISETAS",mayorista36:"CAMISETAS"};
+document.getElementById("fechaPedido").valueAsDate=new Date();document.getElementById("fechaGasto").valueAsDate=new Date();
+function guardar(){localStorage.setItem("importb2b_pedidos_v30",JSON.stringify(pedidos));localStorage.setItem("importb2b_margenes_v30",JSON.stringify(margenes));localStorage.setItem("importb2b_gastos_v30",JSON.stringify(gastos))}function money(n){return "$"+Math.round(n).toLocaleString("es-AR")}function usd(n){return "USD "+Number(n).toFixed(2)}function redondear500(n){return Math.ceil(n/500)*500}
+function toggleBox(id){document.getElementById(id).classList.toggle("active")}function cargarCategorias(){document.getElementById("categoriaNuevo").innerHTML=categorias.map(c=>`<option>${c}</option>`).join("")}
+function renderMargenes(){document.getElementById("tablaMargenes").innerHTML=categorias.map(c=>`<tr><td data-label="Categoría">${c}</td><td data-label="Minorista %"><input type="number" value="${margenes[c].minorista}" onchange="margenes['${c}'].minorista=parseFloat(this.value)||0"></td><td data-label="Mayorista 6 %"><input type="number" value="${margenes[c].mayorista6}" onchange="margenes['${c}'].mayorista6=parseFloat(this.value)||0"></td><td data-label="Mayorista 12 %"><input type="number" value="${margenes[c].mayorista12}" onchange="margenes['${c}'].mayorista12=parseFloat(this.value)||0"></td><td data-label="Mayorista 36 %"><input type="number" value="${margenes[c].mayorista36}" onchange="margenes['${c}'].mayorista36=parseFloat(this.value)||0"></td></tr>`).join("")}function guardarMargenes(){guardar();document.getElementById("margenesBox").classList.remove("active");renderAll()}
+function openTab(id,btn){document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active-btn"));document.getElementById(id).classList.add("active");if(btn)btn.classList.add("active-btn");renderAll();document.getElementById(id).scrollIntoView({behavior:"smooth",block:"start"})}function openTabById(id){const btn=[...document.querySelectorAll(".tab-btn")].find(b=>b.getAttribute("onclick")?.includes(`'${id}'`));openTab(id,btn)}
+function agregarTemporal(){const fecha=document.getElementById("fechaPedido").value,dolar=parseFloat(document.getElementById("dolarNuevo").value),categoria=document.getElementById("categoriaNuevo").value,producto=document.getElementById("productoNuevo").value.trim(),detalle=document.getElementById("detalleNuevo").value.trim()||"Sin detalle",costoUsd=parseFloat(document.getElementById("costoUsdNuevo").value),cantidad=parseInt(document.getElementById("cantidadNuevo").value);if(!fecha||!producto||isNaN(dolar)||isNaN(costoUsd)||isNaN(cantidad)||cantidad<=0){alert("Completá todos los datos.");return}temporal.push({categoria,producto,detalle,cantidad,originalUsd:costoUsd,costoUsd,dolar,costoArs:Math.round(costoUsd*dolar)});["productoNuevo","detalleNuevo","costoUsdNuevo"].forEach(id=>document.getElementById(id).value="");document.getElementById("cantidadNuevo").value=1;renderTemporal()}
+function renderTemporal(){const div=document.getElementById("pedidoTemporal");if(!temporal.length){div.innerHTML="<p>No hay productos cargados.</p>";return}let totalUsd=temporal.reduce((a,i)=>a+i.costoUsd*i.cantidad,0),totalArs=temporal.reduce((a,i)=>a+i.costoArs*i.cantidad,0);div.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD</th><th>ARS</th><th></th></tr></thead><tbody>${temporal.map((i,x)=>`<tr><td data-label="Categoría">${i.categoria}</td><td data-label="Producto">${i.producto}</td><td data-label="Detalle">${i.detalle}</td><td data-label="Cant.">${i.cantidad}</td><td data-label="USD">${usd(i.costoUsd)}</td><td data-label="ARS">${money(i.costoArs)}</td><td data-label="Acción"><button class="delete" onclick="temporal.splice(${x},1);renderTemporal()">Eliminar</button></td></tr>`).join("")}</tbody></table></div><br><div class="cards"><div class="card">Pedido USD<strong>${usd(totalUsd)}</strong></div><div class="card">Pedido ARS<strong>${money(totalArs)}</strong></div></div>`}
+function finalizarPedido(){if(!temporal.length){alert("Cargá al menos un producto.");return}const nuevoId=pedidos.length?Math.max(...pedidos.map(p=>p.id))+1:1;pedidos.push({id:nuevoId,fecha:document.getElementById("fechaPedido").value,productos:[...temporal]});temporal=[];guardar();renderAll();alert("Pedido #"+nuevoId+" finalizado.")}
+function productosStock(){let stock=[];pedidos.forEach(p=>p.productos.forEach(i=>stock.push({...i,pedido:p.id,fecha:p.fecha})));return stock}function stockAgrupado(){const g={};productosStock().forEach(i=>{const key=`${i.categoria}|${i.producto}|${i.detalle}`;if(!g[key])g[key]={categoria:i.categoria,producto:i.producto,detalle:i.detalle,cantidad:0,totalUsd:0,totalArs:0,compras:[]};g[key].cantidad+=i.cantidad;g[key].totalUsd+=i.costoUsd*i.cantidad;g[key].totalArs+=i.costoArs*i.cantidad;g[key].compras.push(i)});return Object.values(g).map(i=>({...i,costoPromedioUsd:i.totalUsd/i.cantidad,costoPromedioArs:i.totalArs/i.cantidad}))}
+function renderResumen(){const s=stockAgrupado();const totalCant=s.reduce((a,i)=>a+i.cantidad,0),totalUsd=s.reduce((a,i)=>a+i.totalUsd,0),totalArs=s.reduce((a,i)=>a+i.totalArs,0);const venta=s.reduce((a,i)=>a+redondear500(i.costoPromedioArs*(1+(margenes[i.categoria]?.minorista||0)/100))*i.cantidad,0);const totalGastos=gastos.reduce((a,g)=>a+Number(g.importe||0),0);document.getElementById("stockTotal").innerText=totalCant;document.getElementById("totalUsd").innerText=usd(totalUsd);document.getElementById("totalArs").innerText=money(totalArs);document.getElementById("gananciaMinorista").innerText=money(venta-totalArs);document.getElementById("totalGastos").innerText=money(totalGastos)}
+function actualizarProducto(pedidoId,index,campo,valor){const pedido=pedidos.find(p=>p.id===pedidoId),item=pedido.productos[index];if(campo==="cantidad")item.cantidad=parseInt(valor)||0;else if(campo==="originalUsd")item.originalUsd=parseFloat(valor)||0;else if(campo==="costoUsd"){item.costoUsd=parseFloat(valor)||0;item.costoArs=Math.round(item.costoUsd*item.dolar)}else if(campo==="dolar"){item.dolar=parseFloat(valor)||0;item.costoArs=Math.round(item.costoUsd*item.dolar)}else if(campo==="costoArs")item.costoArs=parseFloat(valor)||0;else item[campo]=valor;guardar();renderResumen();renderPrecios("minorista");renderPrecios("mayorista6");renderPrecios("mayorista12");renderPrecios("mayorista36")}
+function eliminarProducto(pedidoId,index){if(!confirm("¿Eliminar este producto del pedido?"))return;const pedido=pedidos.find(p=>p.id===pedidoId);pedido.productos.splice(index,1);guardar();renderAll()}function eliminarPedido(pedidoId){if(!confirm("¿Eliminar pedido completo?"))return;pedidos=pedidos.filter(p=>p.id!==pedidoId);guardar();renderAll()}
+function renderPedidos(){const div=document.getElementById("listaPedidos"),q=document.getElementById("buscarPedidos").value.toLowerCase();div.innerHTML="";pedidos.forEach(p=>{const texto=(`#${p.id} ${p.fecha} ${JSON.stringify(p)}`).toLowerCase();if(q&&!texto.includes(q))return;const totalUsd=p.productos.reduce((a,i)=>a+i.costoUsd*i.cantidad,0),totalArs=p.productos.reduce((a,i)=>a+i.costoArs*i.cantidad,0);div.innerHTML+=`<div class="order" data-id="${p.id}"><div class="head" onclick="togglePedido(${p.id})"><div><strong>Pedido #${p.id}</strong> — ${p.fecha}<br><span class="muted">${p.nota||""}</span></div><div><span class="badge">${usd(totalUsd)}</span> <span class="badge">${money(totalArs)}</span></div></div><div class="body"><button class="delete" onclick="event.stopPropagation();eliminarPedido(${p.id})">Eliminar pedido completo</button><br><br><div class="table-wrap"><table><thead><tr><th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD original</th><th>USD real</th><th>Dólar</th><th>ARS</th><th>Acción</th></tr></thead><tbody>${p.productos.map((i,index)=>`<tr><td data-label="Categoría"><select onchange="actualizarProducto(${p.id},${index},'categoria',this.value)">${categorias.map(c=>`<option ${i.categoria===c?'selected':''}>${c}</option>`).join("")}</select></td><td data-label="Producto"><input value="${i.producto}" oninput="actualizarProducto(${p.id},${index},'producto',this.value)"></td><td data-label="Detalle"><input value="${i.detalle}" oninput="actualizarProducto(${p.id},${index},'detalle',this.value)"></td><td data-label="Cant."><input type="number" value="${i.cantidad}" oninput="actualizarProducto(${p.id},${index},'cantidad',this.value)"></td><td data-label="USD original"><input type="number" step="0.01" value="${Number(i.originalUsd||i.costoUsd).toFixed(2)}" oninput="actualizarProducto(${p.id},${index},'originalUsd',this.value)"></td><td data-label="USD real"><input type="number" step="0.01" value="${Number(i.costoUsd).toFixed(2)}" oninput="actualizarProducto(${p.id},${index},'costoUsd',this.value)"></td><td data-label="Dólar"><input type="number" value="${i.dolar}" oninput="actualizarProducto(${p.id},${index},'dolar',this.value)"></td><td data-label="ARS"><input type="number" value="${Math.round(i.costoArs)}" oninput="actualizarProducto(${p.id},${index},'costoArs',this.value)"></td><td data-label="Acción"><button class="delete" onclick="eliminarProducto(${p.id},${index})">Eliminar</button></td></tr>`).join("")}</tbody></table></div></div></div>`})}
+function togglePedido(id){document.querySelectorAll(".order").forEach(o=>{if(o.dataset.id!=id)o.classList.remove("active")});document.querySelector(`.order[data-id="${id}"]`).classList.toggle("active")}
+function setCategoria(tab,cat){categoriaActiva[tab]=cat;renderPrecios(tab)}function renderCats(tab){const map={minorista:"catsMinorista",mayorista6:"catsMayorista6",mayorista12:"catsMayorista12",mayorista36:"catsMayorista36"};document.getElementById(map[tab]).innerHTML=categorias.map(c=>`<button class="cat-btn ${categoriaActiva[tab]===c?'active-btn':''}" onclick="setCategoria('${tab}','${c}')">${c}</button>`).join("")}
+function renderPrecios(tab){renderCats(tab);const inputs={minorista:"buscarMinorista",mayorista6:"buscarMayorista6",mayorista12:"buscarMayorista12",mayorista36:"buscarMayorista36"},tables={minorista:"tablaMinorista",mayorista6:"tablaMayorista6",mayorista12:"tablaMayorista12",mayorista36:"tablaMayorista36"};const q=document.getElementById(inputs[tab]).value.toLowerCase();const data=stockAgrupado().filter(i=>i.categoria===categoriaActiva[tab]&&(`${i.producto} ${i.detalle} ${i.categoria}`.toLowerCase().includes(q)));document.getElementById(tables[tab]).innerHTML=`<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Detalle</th><th>Stock</th><th>Costo promedio</th><th>Venta sugerida</th><th>Venta redonda</th><th>Ganancia/unidad</th></tr></thead><tbody>${data.map(i=>{const margen=margenes[i.categoria]?.[tab]||0,venta=i.costoPromedioArs*(1+margen/100),red=redondear500(venta);return `<tr><td data-label="Producto">${i.producto}</td><td data-label="Detalle">${i.detalle}</td><td data-label="Stock">${i.cantidad}</td><td data-label="Costo promedio">${money(i.costoPromedioArs)}</td><td data-label="Venta sugerida">${money(venta)}</td><td data-label="Venta redonda"><strong>${money(red)}</strong></td><td data-label="Ganancia/unidad">${money(red-i.costoPromedioArs)}</td></tr>`}).join("")}</tbody></table></div>`}
+function agregarGasto(){const fecha=document.getElementById("fechaGasto").value,tipo=document.getElementById("tipoGasto").value,proveedor=document.getElementById("proveedorGasto").value.trim()||"Sin proveedor",importe=parseFloat(document.getElementById("importeGasto").value),detalle=document.getElementById("detalleGasto").value.trim()||"Sin detalle";if(!fecha||isNaN(importe)||importe<=0){alert("Completá fecha e importe.");return}const id=gastos.length?Math.max(...gastos.map(g=>g.id||0))+1:1;gastos.push({id,fecha,tipo,proveedor,importe,detalle});guardar();["proveedorGasto","importeGasto","detalleGasto"].forEach(id=>document.getElementById(id).value="");renderAll();openTabById("gastos")}
+function eliminarGasto(id){if(!confirm("¿Eliminar gasto?"))return;gastos=gastos.filter(g=>g.id!==id);guardar();renderAll()}function renderGastos(){const q=document.getElementById("buscarGastos").value.toLowerCase();const filtrados=gastos.filter(g=>`${g.fecha} ${g.tipo} ${g.proveedor} ${g.detalle}`.toLowerCase().includes(q));const total=filtrados.reduce((a,g)=>a+Number(g.importe||0),0);const porTipo={};filtrados.forEach(g=>porTipo[g.tipo]=(porTipo[g.tipo]||0)+Number(g.importe||0));document.getElementById("graficoGastos").innerHTML=Object.entries(porTipo).map(([tipo,valor])=>`<div class="bar-row"><strong>${tipo}</strong><div class="bar-track"><div class="bar-fill" style="width:${total?Math.max(4,(valor/total)*100):0}%"></div></div><span>${money(valor)}</span></div>`).join("")||"<p>No hay gastos registrados.</p>";document.getElementById("listaGastos").innerHTML=`<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Proveedor</th><th>Detalle</th><th>Importe</th><th>Acción</th></tr></thead><tbody>${filtrados.map(g=>`<tr><td data-label="Fecha">${g.fecha}</td><td data-label="Tipo">${g.tipo}</td><td data-label="Proveedor">${g.proveedor}</td><td data-label="Detalle">${g.detalle}</td><td data-label="Importe">${money(g.importe)}</td><td data-label="Acción"><button class="delete" onclick="eliminarGasto(${g.id})">Eliminar</button></td></tr>`).join("")}</tbody></table></div>`}
+function exportarCSV(){const rows=[["pedido","fecha","categoria","producto","detalle","cantidad","originalUsd","costoUsd","dolar","costoArs"]];pedidos.forEach(p=>p.productos.forEach(i=>rows.push([p.id,p.fecha,i.categoria,i.producto,i.detalle,i.cantidad,i.originalUsd||i.costoUsd,i.costoUsd,i.dolar,i.costoArs])));downloadCSV(rows,"stock_importb2b.csv")}function exportarGastosCSV(){const rows=[["id","fecha","tipo","proveedor","detalle","importeARS"],...gastos.map(g=>[g.id,g.fecha,g.tipo,g.proveedor,g.detalle,g.importe])];downloadCSV(rows,"gastos_importb2b.csv")}function downloadCSV(rows,name){const csv=rows.map(r=>r.join(",")).join("\n");const blob=new Blob([csv],{type:"text/csv"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
+function importarCSV(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=function(ev){const lines=ev.target.result.split("\n").slice(1),nuevoId=pedidos.length?Math.max(...pedidos.map(p=>p.id))+1:1,productos=[];lines.forEach(line=>{const [categoria,producto,detalle,cantidad,costoUsd,dolar,fecha]=line.split(",");if(!producto)return;const c=parseFloat(costoUsd)||0,d=parseFloat(dolar)||1480;productos.push({categoria:categoria||"OTROS",producto,detalle:detalle||"Sin detalle",cantidad:parseInt(cantidad)||1,originalUsd:c,costoUsd:c,dolar:d,costoArs:Math.round(c*d)})});pedidos.push({id:nuevoId,fecha:new Date().toISOString().slice(0,10),productos});guardar();renderAll();alert("CSV importado como Pedido #"+nuevoId)};r.readAsText(file)}
+function renderAll(){renderMargenes();renderTemporal();renderResumen();renderPedidos();renderPrecios("minorista");renderPrecios("mayorista6");renderPrecios("mayorista12");renderPrecios("mayorista36");renderGastos()}
+cargarCategorias();renderAll();
 </script>
-
 </body>
 </html>
