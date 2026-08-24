@@ -98,6 +98,29 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
 .status{font-size:12px;color:var(--muted);margin-top:8px}
 .empty{padding:18px;text-align:center;color:var(--muted)}
 .notice{padding:10px;border-radius:9px;background:#202328;color:var(--muted);font-size:12px;margin-bottom:10px}
+.ship-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.ship-card{border:1px solid var(--line);background:#1c1f23;border-radius:12px;padding:12px}
+.ship-card.ready{border-color:rgba(40,183,107,.55);background:rgba(40,183,107,.08)}
+.ship-card.issue{border-color:rgba(229,9,20,.55);background:rgba(229,9,20,.08)}
+.ship-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:9px}
+.ship-meta{font-size:12px;color:var(--muted);line-height:1.5}
+.status-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:800}
+.st-ready{background:rgba(40,183,107,.18);color:#88efb5}
+.st-received{background:rgba(40,183,107,.12);color:#a8f3c8}
+.st-transit{background:rgba(77,141,255,.15);color:#9fc0ff}
+.st-center{background:rgba(216,173,75,.16);color:#f0ca73}
+.st-carrier{background:rgba(216,173,75,.1);color:#e7c36f}
+.st-issue{background:rgba(229,9,20,.16);color:#ff8e95}
+.st-none{background:#2b2e33;color:#bbb}
+.timeline{margin-top:10px;padding-left:12px;border-left:2px solid #35383d}
+.event{padding:0 0 12px 10px;position:relative}
+.event:before{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:var(--red);left:-15px;top:4px}
+.event strong{display:block;font-size:12px}.event small{color:var(--muted);line-height:1.4}
+.filterbar{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px}
+.filter-btn{flex:0 0 auto;border:0;border-radius:999px;padding:7px 10px;background:#292c30;color:#fff;font-size:12px;font-weight:700}
+.filter-btn.active{background:var(--red)}
+.order-ships{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.track-inline{font-size:11px;color:var(--muted)}
 @media(max-width:850px){
   .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
   header{align-items:flex-start}
@@ -235,12 +258,42 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
   </div>
 </div>
 
+
+<div class="drop" id="nuevoSeguimientoBox">
+  <div class="drop-head" onclick="toggleDrop('nuevoSeguimientoBox')">
+    <strong>Agregar seguimiento</strong><span class="badge">Desplegar</span>
+  </div>
+  <div class="drop-body">
+    <div class="grid">
+      <div>
+        <label>Pedido relacionado</label>
+        <select id="shipmentOrder"></select>
+      </div>
+      <div>
+        <label>Transportista</label>
+        <select id="shipmentCarrier"><option value="Via Cargo">Vía Cargo</option></select>
+      </div>
+      <div>
+        <label>Número de seguimiento</label>
+        <input id="shipmentTracking" placeholder="Ej: 999037813885">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn green" onclick="crearShipment()">Guardar seguimiento</button>
+    </div>
+    <div class="notice" style="margin-top:10px">
+      El número se registra en 17TRACK desde Supabase. La clave privada nunca se envía al navegador.
+    </div>
+  </div>
+</div>
+
 <div class="tabs" id="mainTabs">
   <button class="tab-btn active-btn" data-tab="pedidos" onclick="openTab('pedidos',this)">Pedidos</button>
   <button class="tab-btn" data-tab="minorista" onclick="openTab('minorista',this)">Minorista</button>
   <button class="tab-btn" data-tab="mayorista6" onclick="openTab('mayorista6',this)">Mayorista 6</button>
   <button class="tab-btn" data-tab="mayorista12" onclick="openTab('mayorista12',this)">Mayorista 12</button>
   <button class="tab-btn" data-tab="mayorista36" onclick="openTab('mayorista36',this)">Mayorista 36</button>
+  <button class="tab-btn" data-tab="seguimiento" onclick="openTab('seguimiento',this)">Seguimiento</button>
   <button class="tab-btn" data-tab="gastos" onclick="openTab('gastos',this)">Gastos</button>
   <button class="tab-btn" data-tab="csv" onclick="openTab('csv',this)">CSV</button>
 </div>
@@ -290,6 +343,38 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
 </div>
 
 
+
+<div id="seguimiento" class="tab">
+  <div class="panel">
+    <h2>Seguimiento de envíos</h2>
+    <input class="search" id="buscarSeguimiento" placeholder="Buscar guía, pedido, estado, ubicación o fecha..." oninput="renderShipments()">
+
+    <div class="cards" style="margin-bottom:12px">
+      <div class="card clickable" onclick="setTrackingFilter('IN_TRANSIT')"><span class="label">En viaje</span><strong id="shipCountTransit">0</strong></div>
+      <div class="card clickable" onclick="setTrackingFilter('ARRIVED_AT_DISTRIBUTION_CENTER')"><span class="label">En centro</span><strong id="shipCountCenter">0</strong></div>
+      <div class="card green clickable" onclick="setTrackingFilter('READY_FOR_PICKUP')"><span class="label">Para retirar</span><strong id="shipCountReady">0</strong></div>
+      <div class="card clickable" onclick="setTrackingFilter('RECEIVED')"><span class="label">Retirados</span><strong id="shipCountReceived">0</strong></div>
+    </div>
+
+    <div class="filterbar">
+      <button class="filter-btn active" data-filter="ALL" onclick="setTrackingFilter('ALL',this)">Todos</button>
+      <button class="filter-btn" data-filter="NO_UPDATES" onclick="setTrackingFilter('NO_UPDATES',this)">Sin novedades</button>
+      <button class="filter-btn" data-filter="CARRIER_RECEIVED" onclick="setTrackingFilter('CARRIER_RECEIVED',this)">Ingresados</button>
+      <button class="filter-btn" data-filter="IN_TRANSIT" onclick="setTrackingFilter('IN_TRANSIT',this)">En viaje</button>
+      <button class="filter-btn" data-filter="ARRIVED_AT_DISTRIBUTION_CENTER" onclick="setTrackingFilter('ARRIVED_AT_DISTRIBUTION_CENTER',this)">Centro distribución</button>
+      <button class="filter-btn" data-filter="READY_FOR_PICKUP" onclick="setTrackingFilter('READY_FOR_PICKUP',this)">Para retirar</button>
+      <button class="filter-btn" data-filter="RECEIVED" onclick="setTrackingFilter('RECEIVED',this)">Retirados</button>
+      <button class="filter-btn" data-filter="ISSUE" onclick="setTrackingFilter('ISSUE',this)">Incidencias</button>
+    </div>
+
+    <div class="actions" style="margin-bottom:12px">
+      <button class="btn green" onclick="toggleDrop('nuevoSeguimientoBox');document.getElementById('nuevoSeguimientoBox').scrollIntoView({behavior:'smooth'})">+ Agregar seguimiento</button>
+    </div>
+
+    <div id="shipmentsList" class="ship-grid"></div>
+  </div>
+</div>
+
 <div id="gastos" class="tab">
   <div class="panel">
     <h2>Gastos registrados</h2>
@@ -335,6 +420,9 @@ let currentUser=null;
 let pedidos=[];
 let margenes={};
 let gastos=[];
+let shipments=[];
+let trackingEvents=[];
+let trackingFilter="ALL";
 let temporal=[];
 let chartTipo=null;
 let chartProveedor=null;
@@ -368,7 +456,7 @@ async function logout(){
   if(realtimeChannel){await sb.removeChannel(realtimeChannel);realtimeChannel=null}
   await sb.auth.signOut();
   currentUser=null;
-  pedidos=[];margenes={};gastos=[];temporal=[];
+  pedidos=[];margenes={};gastos=[];shipments=[];trackingEvents=[];temporal=[];
   document.getElementById("appView").classList.add("hidden");
   document.getElementById("loginView").classList.remove("hidden");
 }
@@ -381,11 +469,12 @@ async function startApp(){
   document.getElementById("gastoFecha").value=new Date().toISOString().slice(0,10);
   cargarCategorias();
   await cargarTodo();
+  renderShipmentOrderOptions();
   activarRealtime();
 }
 
 async function cargarTodo(){
-  await Promise.all([cargarPedidos(),cargarMargenes(),cargarGastos()]);
+  await Promise.all([cargarPedidos(),cargarMargenes(),cargarGastos(),cargarTracking()]);
   renderAll();
 }
 
@@ -435,6 +524,251 @@ async function cargarMargenes(){
   });
 }
 
+
+
+async function cargarTracking(){
+  const {data:s,error:serr}=await sb.from("importb2b_shipments")
+    .select("*").eq("owner_id",currentUser.id).order("created_at",{ascending:false});
+  if(serr){alert("Error cargando seguimientos: "+serr.message);return}
+
+  const {data:e,error:eerr}=await sb.from("importb2b_tracking_events")
+    .select("*").eq("owner_id",currentUser.id).order("event_datetime",{ascending:false});
+  if(eerr){alert("Error cargando historial: "+eerr.message);return}
+
+  shipments=(s||[]).map(x=>({
+    id:x.id,
+    orderDbId:x.order_id,
+    carrier:x.carrier_name,
+    tracking:x.tracking_number,
+    provider:x.tracking_provider,
+    carrierCode:x.provider_carrier_code,
+    registered:Boolean(x.tracking_registered),
+    globalStatus:x.provider_global_status||"",
+    status:x.normalized_status||"NO_UPDATES",
+    latestDescription:x.latest_checkpoint_description||"",
+    latestLocation:x.latest_checkpoint_location||"",
+    latestAt:x.latest_checkpoint_at,
+    notifiedAt:x.ready_for_pickup_notified_at,
+    isReceived:Boolean(x.is_received),
+    receivedAt:x.received_at,
+    lastSyncAt:x.last_sync_at,
+    syncError:x.sync_error||""
+  }));
+
+  trackingEvents=(e||[]).map(x=>({
+    id:x.id,
+    shipmentId:x.shipment_id,
+    tracking:x.tracking_number,
+    description:x.description_original||"",
+    location:x.location_original||"",
+    at:x.event_datetime,
+    status:x.normalized_status||"NO_UPDATES"
+  }));
+}
+
+function orderForShipment(s){
+  return pedidos.find(p=>Number(p.dbId)===Number(s.orderDbId))||null;
+}
+
+function renderShipmentOrderOptions(){
+  const sel=document.getElementById("shipmentOrder");
+  if(!sel)return;
+  sel.innerHTML=pedidos.map(p=>`<option value="${p.dbId}">Pedido #${p.id} — ${esc(p.fecha)}</option>`).join("");
+}
+
+function statusInfo(status,syncError=""){
+  if(syncError)return {label:"INCIDENCIA",cls:"st-issue",icon:"🔴"};
+  const map={
+    READY_FOR_PICKUP:{label:"PARA RETIRAR",cls:"st-ready",icon:"🟢"},
+    RECEIVED:{label:"RETIRADO",cls:"st-received",icon:"✅"},
+    ARRIVED_AT_DISTRIBUTION_CENTER:{label:"CENTRO DE DISTRIBUCIÓN",cls:"st-center",icon:"🟠"},
+    IN_TRANSIT:{label:"EN VIAJE",cls:"st-transit",icon:"🔵"},
+    CARRIER_RECEIVED:{label:"INGRESÓ A VÍA CARGO",cls:"st-carrier",icon:"🟡"},
+    NO_UPDATES:{label:"SIN NOVEDADES",cls:"st-none",icon:"⚪"}
+  };
+  return map[status]||map.NO_UPDATES;
+}
+
+function fmtDateTime(v){
+  if(!v)return "Sin fecha";
+  try{return new Intl.DateTimeFormat("es-AR",{dateStyle:"short",timeStyle:"short"}).format(new Date(v))}catch{return String(v)}
+}
+
+async function crearShipment(){
+  const orderId=Number(document.getElementById("shipmentOrder").value);
+  const carrier=document.getElementById("shipmentCarrier").value;
+  const tracking=document.getElementById("shipmentTracking").value.trim();
+  if(!orderId||!tracking){alert("Seleccioná pedido y número de seguimiento.");return}
+
+  const {data,error}=await sb.from("importb2b_shipments").insert({
+    owner_id:currentUser.id,
+    order_id:orderId,
+    carrier_name:carrier,
+    tracking_number:tracking,
+    tracking_provider:"17TRACK",
+    normalized_status:"NO_UPDATES"
+  }).select("id").single();
+
+  if(error){alert("No se pudo crear el seguimiento: "+error.message);return}
+
+  const {data:fnData,error:fnError}=await sb.functions.invoke("seventeen-track-register",{
+    body:{shipment_id:data.id}
+  });
+
+  document.getElementById("shipmentTracking").value="";
+  document.getElementById("nuevoSeguimientoBox").classList.remove("active");
+
+  await cargarTracking();
+  renderAll();
+
+  if(fnError){
+    alert("El seguimiento se guardó, pero 17TRACK no pudo registrarlo todavía. Podés usar Reintentar registro.");
+    return;
+  }
+  if(fnData?.ok){
+    await refrescarShipment(data.id,true);
+    alert("Seguimiento registrado correctamente.");
+  }else{
+    alert("Seguimiento guardado. 17TRACK devolvió: "+(fnData?.error||"respuesta no confirmada"));
+  }
+}
+
+async function registrarShipment(id){
+  const {data,error}=await sb.functions.invoke("seventeen-track-register",{body:{shipment_id:id}});
+  await cargarTracking();renderAll();
+  if(error||!data?.ok)alert("No se pudo registrar: "+(data?.error||error?.message||"error"));
+  else alert("Tracking registrado en 17TRACK.");
+}
+
+async function refrescarShipment(id,silent=false){
+  const {data,error}=await sb.functions.invoke("seventeen-track-refresh",{body:{shipment_id:id}});
+  await Promise.all([cargarTracking(),cargarPedidos()]);
+  renderAll();
+  if(!silent){
+    if(error||!data?.ok)alert("No se pudo actualizar: "+(data?.error||error?.message||"error"));
+    else alert("Seguimiento actualizado.");
+  }
+}
+
+async function marcarRetirado(id){
+  if(!confirm("¿Marcar este envío como retirado?"))return;
+  const now=new Date().toISOString();
+  const {error}=await sb.from("importb2b_shipments").update({
+    is_received:true,
+    received_at:now,
+    normalized_status:"RECEIVED",
+    updated_at:now
+  }).eq("id",id);
+  if(error){alert(error.message);return}
+  await cargarTracking();renderAll();
+}
+
+async function eliminarShipment(id){
+  if(!confirm("¿Eliminar este seguimiento y su historial?"))return;
+  const {error:eerr}=await sb.from("importb2b_tracking_events").delete().eq("shipment_id",id);
+  if(eerr){alert(eerr.message);return}
+  const {error}=await sb.from("importb2b_shipments").delete().eq("id",id);
+  if(error){alert(error.message);return}
+  await cargarTracking();renderAll();
+}
+
+function setTrackingFilter(filter,btn=null){
+  trackingFilter=filter;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b.dataset.filter===filter));
+  if(btn)btn.classList.add("active");
+  openMainTab("seguimiento");
+  renderShipments();
+}
+
+function shipmentPriority(s){
+  if(s.status==="READY_FOR_PICKUP")return 1;
+  if(s.syncError)return 2;
+  if(s.status==="ARRIVED_AT_DISTRIBUTION_CENTER")return 3;
+  if(s.status==="IN_TRANSIT")return 4;
+  if(s.status==="CARRIER_RECEIVED")return 5;
+  if(s.status==="NO_UPDATES")return 6;
+  if(s.status==="RECEIVED")return 7;
+  return 8;
+}
+
+function renderShipments(){
+  const q=(document.getElementById("buscarSeguimiento")?.value||"").toLowerCase().trim();
+
+  document.getElementById("shipCountTransit").textContent=shipments.filter(s=>s.status==="IN_TRANSIT").length;
+  document.getElementById("shipCountCenter").textContent=shipments.filter(s=>s.status==="ARRIVED_AT_DISTRIBUTION_CENTER").length;
+  document.getElementById("shipCountReady").textContent=shipments.filter(s=>s.status==="READY_FOR_PICKUP").length;
+  document.getElementById("shipCountReceived").textContent=shipments.filter(s=>s.status==="RECEIVED"||s.isReceived).length;
+
+  let data=[...shipments].sort((a,b)=>shipmentPriority(a)-shipmentPriority(b));
+
+  if(trackingFilter==="ISSUE")data=data.filter(s=>!!s.syncError);
+  else if(trackingFilter!=="ALL")data=data.filter(s=>s.status===trackingFilter);
+
+  data=data.filter(s=>{
+    const p=orderForShipment(s);
+    const text=`${s.tracking} ${s.carrier} ${s.status} ${s.latestDescription} ${s.latestLocation} ${s.latestAt||""} #${p?.id||""} ${p?.fecha||""}`;
+    return text.toLowerCase().includes(q);
+  });
+
+  const cont=document.getElementById("shipmentsList");
+  cont.innerHTML=data.map(s=>{
+    const p=orderForShipment(s);
+    const st=statusInfo(s.status,s.syncError);
+    const evs=trackingEvents.filter(e=>Number(e.shipmentId)===Number(s.id)).slice(0,12);
+    const cardClass=s.status==="READY_FOR_PICKUP"?"ready":(s.syncError?"issue":"");
+    return `
+      <div class="ship-card ${cardClass}">
+        <div class="ship-top">
+          <div>
+            <strong>${p?`Pedido #${p.id}`:"Pedido"}</strong>
+            <div class="ship-meta">${esc(s.carrier)} · Guía ${esc(s.tracking)}</div>
+          </div>
+          <span class="status-pill ${st.cls}">${st.icon} ${st.label}</span>
+        </div>
+
+        <div class="ship-meta">
+          ${s.latestDescription?`<strong style="color:#fff">${esc(s.latestDescription)}</strong><br>`:""}
+          ${s.latestLocation?`📍 ${esc(s.latestLocation)}<br>`:""}
+          ${s.latestAt?`${fmtDateTime(s.latestAt)}<br>`:""}
+          ${s.lastSyncAt?`Última sincronización: ${fmtDateTime(s.lastSyncAt)}`:""}
+          ${s.syncError?`<br><span style="color:#ff8e95">Error: ${esc(s.syncError)}</span>`:""}
+        </div>
+
+        <div class="actions">
+          ${!s.registered?`<button class="btn gold small" onclick="registrarShipment(${s.id})">Reintentar registro</button>`:""}
+          ${s.status!=="RECEIVED"?`<button class="btn dark small" onclick="refrescarShipment(${s.id})">↻ Actualizar ahora</button>`:""}
+          ${s.status==="READY_FOR_PICKUP"&&!s.isReceived?`<button class="btn green small" onclick="marcarRetirado(${s.id})">Marcar como retirado</button>`:""}
+          <button class="btn dark small" onclick="toggleTrackingHistory(${s.id})">Ver historial</button>
+          <button class="btn danger small" onclick="eliminarShipment(${s.id})">Eliminar</button>
+        </div>
+
+        <div id="hist_${s.id}" class="hidden">
+          <div class="timeline">
+            ${evs.length?evs.map(e=>`
+              <div class="event">
+                <strong>${esc(e.description||statusInfo(e.status).label)}</strong>
+                <small>${e.location?`${esc(e.location)}<br>`:""}${fmtDateTime(e.at)}</small>
+              </div>`).join(""):'<div class="empty">Todavía no hay movimientos guardados.</div>'}
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+
+  if(!data.length)cont.innerHTML='<div class="empty">No hay seguimientos para este filtro.</div>';
+}
+
+function toggleTrackingHistory(id){
+  document.getElementById("hist_"+id)?.classList.toggle("hidden");
+}
+
+function renderOrderShipmentBadges(order){
+  const ss=shipments.filter(s=>Number(s.orderDbId)===Number(order.dbId));
+  if(!ss.length)return '<div class="track-inline">Sin seguimiento</div>';
+  return `<div class="order-ships">${ss.map(s=>{
+    const st=statusInfo(s.status,s.syncError);
+    return `<span class="status-pill ${st.cls}" onclick="event.stopPropagation();openMainTab('seguimiento')">${st.icon} ${st.label}</span>`;
+  }).join("")}</div>`;
+}
 
 async function cargarGastos(){
   const {data,error}=await sb.from("importb2b_expenses")
@@ -769,6 +1103,7 @@ function renderPedidos(){
         <div class="order-head" onclick="togglePedido(${p.id})">
           <div class="order-title"><strong>Pedido #${p.id}</strong> — ${esc(p.fecha)}
             ${p.nota?`<br><small>${esc(p.nota)}</small>`:""}
+            ${renderOrderShipmentBadges(p)}
           </div>
           <div class="order-badges">
             <span class="badge">${usd(p.investmentUsd)}</span><span class="badge">${money(totalArs)}</span>
@@ -776,6 +1111,7 @@ function renderPedidos(){
         </div>
         <div class="order-body">
           <div class="actions">
+            <button class="btn green small" onclick="event.stopPropagation();prepararSeguimientoPedido(${p.dbId})">+ Agregar seguimiento</button>
             <button class="btn danger small" onclick="event.stopPropagation();eliminarPedido(${p.dbId})">Eliminar pedido completo</button>
           </div>
           <div class="table-wrap">
@@ -803,6 +1139,12 @@ function renderPedidos(){
       </div>`;
   });
   if(!div.innerHTML)div.innerHTML='<div class="empty">No se encontraron pedidos.</div>';
+}
+
+function prepararSeguimientoPedido(orderDbId){
+  document.getElementById("shipmentOrder").value=String(orderDbId);
+  document.getElementById("nuevoSeguimientoBox").classList.add("active");
+  document.getElementById("nuevoSeguimientoBox").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 function togglePedido(id){
@@ -910,6 +1252,8 @@ function activarRealtime(){
     .on("postgres_changes",{event:"*",schema:"public",table:"importb2b_order_items",filter:`owner_id=eq.${currentUser.id}`},()=>cargarTodo())
     .on("postgres_changes",{event:"*",schema:"public",table:"importb2b_margins",filter:`owner_id=eq.${currentUser.id}`},()=>cargarTodo())
     .on("postgres_changes",{event:"*",schema:"public",table:"importb2b_expenses",filter:`owner_id=eq.${currentUser.id}`},()=>cargarTodo())
+    .on("postgres_changes",{event:"*",schema:"public",table:"importb2b_shipments",filter:`owner_id=eq.${currentUser.id}`},()=>cargarTodo())
+    .on("postgres_changes",{event:"*",schema:"public",table:"importb2b_tracking_events",filter:`owner_id=eq.${currentUser.id}`},()=>cargarTodo())
     .subscribe();
 }
 
@@ -923,6 +1267,8 @@ function renderAll(){
   renderPrecios("mayorista12");
   renderPrecios("mayorista36");
   renderGastos();
+  renderShipments();
+  renderShipmentOrderOptions();
 }
 
 (async()=>{
