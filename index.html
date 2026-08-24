@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>IMPORTB2B - Gestión Online</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 :root{
   --bg:#0d0f10;--panel:#17191c;--panel2:#202328;--line:#2d3035;
@@ -48,7 +49,7 @@ input:focus,select:focus{outline:2px solid rgba(229,9,20,.28)}
 .btn.danger{background:#a60d17}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
 .card{
   border-radius:12px;padding:12px;background:var(--panel2);border:1px solid var(--line);
   text-align:center;min-height:76px;display:flex;flex-direction:column;justify-content:center
@@ -159,6 +160,9 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
     <div class="card gold clickable" onclick="openMainTab('minorista')">
       <span class="label">Ganancia esperada minorista</span><strong id="gananciaMinorista">$0</strong>
     </div>
+    <div class="card clickable" style="border-color:rgba(229,9,20,.35);background:rgba(229,9,20,.08)" onclick="openMainTab('gastos')">
+      <span class="label">Gastos registrados</span><strong id="totalGastos">$0</strong>
+    </div>
   </div>
 </div>
 
@@ -199,12 +203,45 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
   </div>
 </div>
 
+
+<div class="drop" id="nuevoGastoBox">
+  <div class="drop-head" onclick="toggleDrop('nuevoGastoBox')">
+    <strong>Registrar gasto</strong><span class="badge">Desplegar</span>
+  </div>
+  <div class="drop-body">
+    <div class="grid">
+      <div><label>Fecha</label><input type="date" id="gastoFecha"></div>
+      <div>
+        <label>Tipo de gasto</label>
+        <select id="gastoTipo">
+          <option>Materia prima</option>
+          <option>Envío</option>
+          <option>Impuesto</option>
+          <option>Logística</option>
+          <option>Proveedor</option>
+          <option>Servicio</option>
+          <option>Comisión</option>
+          <option>Publicidad</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div><label>Proveedor</label><input id="gastoProveedor" placeholder="Ej: Correo / proveedor"></div>
+      <div><label>Descripción</label><input id="gastoDescripcion" placeholder="Detalle del gasto"></div>
+      <div><label>Monto ARS</label><input type="number" step="0.01" id="gastoArs"></div>
+      <div><label>Monto USD (opcional)</label><input type="number" step="0.01" id="gastoUsd"></div>
+      <div><label>Cotización dólar (opcional)</label><input type="number" step="0.01" id="gastoDolar"></div>
+    </div>
+    <div class="actions"><button class="btn green" onclick="guardarGasto()">Guardar gasto</button></div>
+  </div>
+</div>
+
 <div class="tabs" id="mainTabs">
   <button class="tab-btn active-btn" data-tab="pedidos" onclick="openTab('pedidos',this)">Pedidos</button>
   <button class="tab-btn" data-tab="minorista" onclick="openTab('minorista',this)">Minorista</button>
   <button class="tab-btn" data-tab="mayorista6" onclick="openTab('mayorista6',this)">Mayorista 6</button>
   <button class="tab-btn" data-tab="mayorista12" onclick="openTab('mayorista12',this)">Mayorista 12</button>
   <button class="tab-btn" data-tab="mayorista36" onclick="openTab('mayorista36',this)">Mayorista 36</button>
+  <button class="tab-btn" data-tab="gastos" onclick="openTab('gastos',this)">Gastos</button>
   <button class="tab-btn" data-tab="csv" onclick="openTab('csv',this)">CSV</button>
 </div>
 
@@ -252,6 +289,27 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
   </div>
 </div>
 
+
+<div id="gastos" class="tab">
+  <div class="panel">
+    <h2>Gastos registrados</h2>
+    <input class="search" id="buscarGastos" placeholder="Buscar por fecha, tipo, proveedor o descripción..." oninput="renderGastos()">
+
+    <div class="cards" style="margin-bottom:12px">
+      <div class="card"><span class="label">Total gastos ARS</span><strong id="gastosTotalArs">$0</strong></div>
+      <div class="card"><span class="label">Total gastos USD</span><strong id="gastosTotalUsd">USD 0</strong></div>
+      <div class="card"><span class="label">Registros</span><strong id="gastosCantidad">0</strong></div>
+    </div>
+
+    <div class="grid" style="margin-bottom:14px">
+      <div class="panel" style="margin:0;padding:12px"><canvas id="chartGastosTipo"></canvas></div>
+      <div class="panel" style="margin:0;padding:12px"><canvas id="chartGastosProveedor"></canvas></div>
+    </div>
+
+    <div id="tablaGastos"></div>
+  </div>
+</div>
+
 <div id="csv" class="tab">
   <div class="panel">
     <h2>Exportar stock</h2>
@@ -276,7 +334,10 @@ const categorias=[
 let currentUser=null;
 let pedidos=[];
 let margenes={};
+let gastos=[];
 let temporal=[];
+let chartTipo=null;
+let chartProveedor=null;
 let realtimeChannel=null;
 let categoriaActiva={minorista:"CAMISETAS",mayorista6:"CAMISETAS",mayorista12:"CAMISETAS",mayorista36:"CAMISETAS"};
 
@@ -307,7 +368,7 @@ async function logout(){
   if(realtimeChannel){await sb.removeChannel(realtimeChannel);realtimeChannel=null}
   await sb.auth.signOut();
   currentUser=null;
-  pedidos=[];margenes={};temporal=[];
+  pedidos=[];margenes={};gastos=[];temporal=[];
   document.getElementById("appView").classList.add("hidden");
   document.getElementById("loginView").classList.remove("hidden");
 }
@@ -317,13 +378,14 @@ async function startApp(){
   document.getElementById("appView").classList.remove("hidden");
   document.getElementById("userEmail").textContent=currentUser.email||"";
   setToday();
+  document.getElementById("gastoFecha").value=new Date().toISOString().slice(0,10);
   cargarCategorias();
   await cargarTodo();
   activarRealtime();
 }
 
 async function cargarTodo(){
-  await Promise.all([cargarPedidos(),cargarMargenes()]);
+  await Promise.all([cargarPedidos(),cargarMargenes(),cargarGastos()]);
   renderAll();
 }
 
@@ -370,6 +432,180 @@ async function cargarMargenes(){
   });
   categorias.forEach(c=>{
     if(!margenes[c])margenes[c]={minorista:0,mayorista6:0,mayorista12:0,mayorista36:0};
+  });
+}
+
+
+async function cargarGastos(){
+  const {data,error}=await sb.from("importb2b_expenses")
+    .select("*").eq("owner_id",currentUser.id)
+    .order("expense_date",{ascending:false})
+    .order("id",{ascending:false});
+  if(error){alert("Error cargando gastos: "+error.message);return}
+  gastos=(data||[]).map(g=>({
+    id:g.id,
+    fecha:g.expense_date,
+    tipo:g.expense_type,
+    proveedor:g.provider||"",
+    descripcion:g.description||"",
+    montoArs:Number(g.amount_ars||0),
+    montoUsd:g.amount_usd==null?null:Number(g.amount_usd),
+    dolar:g.dollar_rate==null?null:Number(g.dollar_rate)
+  }));
+}
+
+async function guardarGasto(){
+  const fecha=document.getElementById("gastoFecha").value;
+  const tipo=document.getElementById("gastoTipo").value;
+  const proveedor=document.getElementById("gastoProveedor").value.trim();
+  const descripcion=document.getElementById("gastoDescripcion").value.trim();
+  const montoArs=Number(document.getElementById("gastoArs").value||0);
+  const usdRaw=document.getElementById("gastoUsd").value;
+  const dolarRaw=document.getElementById("gastoDolar").value;
+
+  if(!fecha || !(montoArs>0 || Number(usdRaw)>0)){
+    alert("Completá la fecha y al menos un monto.");
+    return;
+  }
+
+  const {error}=await sb.from("importb2b_expenses").insert({
+    owner_id:currentUser.id,
+    expense_date:fecha,
+    expense_type:tipo,
+    provider:proveedor||null,
+    description:descripcion||null,
+    amount_ars:montoArs,
+    amount_usd:usdRaw===""?null:Number(usdRaw),
+    dollar_rate:dolarRaw===""?null:Number(dolarRaw)
+  });
+
+  if(error){alert("No se pudo guardar el gasto: "+error.message);return}
+
+  document.getElementById("gastoProveedor").value="";
+  document.getElementById("gastoDescripcion").value="";
+  document.getElementById("gastoArs").value="";
+  document.getElementById("gastoUsd").value="";
+  document.getElementById("gastoDolar").value="";
+
+  await cargarGastos();
+  document.getElementById("nuevoGastoBox").classList.remove("active");
+  renderAll();
+}
+
+async function editarGasto(id){
+  const fecha=document.getElementById("gfecha_"+id).value;
+  const tipo=document.getElementById("gtipo_"+id).value;
+  const proveedor=document.getElementById("gprov_"+id).value.trim();
+  const descripcion=document.getElementById("gdesc_"+id).value.trim();
+  const montoArs=Number(document.getElementById("gars_"+id).value||0);
+  const usdRaw=document.getElementById("gusd_"+id).value;
+  const dolarRaw=document.getElementById("gdolar_"+id).value;
+
+  const {error}=await sb.from("importb2b_expenses").update({
+    expense_date:fecha,
+    expense_type:tipo,
+    provider:proveedor||null,
+    description:descripcion||null,
+    amount_ars:montoArs,
+    amount_usd:usdRaw===""?null:Number(usdRaw),
+    dollar_rate:dolarRaw===""?null:Number(dolarRaw),
+    updated_at:new Date().toISOString()
+  }).eq("id",id);
+
+  if(error){alert(error.message);return}
+  await cargarGastos();renderAll();
+}
+
+async function eliminarGasto(id){
+  if(!confirm("¿Eliminar este gasto?"))return;
+  const {error}=await sb.from("importb2b_expenses").delete().eq("id",id);
+  if(error){alert(error.message);return}
+  await cargarGastos();renderAll();
+}
+
+function renderGastos(){
+  const q=(document.getElementById("buscarGastos")?.value||"").toLowerCase().trim();
+  const data=gastos.filter(g=>
+    `${g.fecha} ${g.tipo} ${g.proveedor} ${g.descripcion}`.toLowerCase().includes(q)
+  );
+
+  const totalArs=gastos.reduce((a,g)=>a+g.montoArs,0);
+  const totalUsd=gastos.reduce((a,g)=>a+(g.montoUsd||0),0);
+
+  document.getElementById("totalGastos").textContent=money(totalArs);
+  document.getElementById("gastosTotalArs").textContent=money(totalArs);
+  document.getElementById("gastosTotalUsd").textContent=usd(totalUsd);
+  document.getElementById("gastosCantidad").textContent=gastos.length;
+
+  document.getElementById("tablaGastos").innerHTML=`
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th>Fecha</th><th>Tipo</th><th>Proveedor</th><th>Descripción</th>
+        <th>ARS</th><th>USD</th><th>Dólar</th><th>Acción</th>
+      </tr></thead>
+      <tbody>${data.map(g=>`
+        <tr>
+          <td><input id="gfecha_${g.id}" type="date" value="${esc(g.fecha)}"></td>
+          <td>
+            <select id="gtipo_${g.id}">
+              ${["Materia prima","Envío","Impuesto","Logística","Proveedor","Servicio","Comisión","Publicidad","Otro"]
+                .map(t=>`<option ${g.tipo===t?"selected":""}>${t}</option>`).join("")}
+            </select>
+          </td>
+          <td><input id="gprov_${g.id}" value="${esc(g.proveedor)}"></td>
+          <td><input id="gdesc_${g.id}" value="${esc(g.descripcion)}"></td>
+          <td><input id="gars_${g.id}" type="number" step="0.01" value="${g.montoArs}"></td>
+          <td><input id="gusd_${g.id}" type="number" step="0.01" value="${g.montoUsd??""}"></td>
+          <td><input id="gdolar_${g.id}" type="number" step="0.01" value="${g.dolar??""}"></td>
+          <td>
+            <button class="btn green small" onclick="editarGasto(${g.id})">Guardar</button>
+            <button class="btn danger small" onclick="eliminarGasto(${g.id})">Eliminar</button>
+          </td>
+        </tr>`).join("")}
+      </tbody>
+    </table></div>
+    ${data.length?"":'<div class="empty">No se encontraron gastos.</div>'}`;
+
+  renderGraficosGastos();
+}
+
+function renderGraficosGastos(){
+  if(!window.Chart)return;
+
+  const porTipo={};
+  const porProveedor={};
+
+  gastos.forEach(g=>{
+    porTipo[g.tipo]=(porTipo[g.tipo]||0)+g.montoArs;
+    const p=g.proveedor||"Sin proveedor";
+    porProveedor[p]=(porProveedor[p]||0)+g.montoArs;
+  });
+
+  const topProv=Object.entries(porProveedor).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  if(chartTipo)chartTipo.destroy();
+  if(chartProveedor)chartProveedor.destroy();
+
+  chartTipo=new Chart(document.getElementById("chartGastosTipo"),{
+    type:"doughnut",
+    data:{labels:Object.keys(porTipo),datasets:[{data:Object.values(porTipo)}]},
+    options:{
+      responsive:true,
+      plugins:{legend:{labels:{color:"#fff"}}}
+    }
+  });
+
+  chartProveedor=new Chart(document.getElementById("chartGastosProveedor"),{
+    type:"bar",
+    data:{labels:topProv.map(x=>x[0]),datasets:[{label:"ARS",data:topProv.map(x=>x[1])}]},
+    options:{
+      responsive:true,
+      scales:{
+        x:{ticks:{color:"#fff"}},
+        y:{ticks:{color:"#fff"}}
+      },
+      plugins:{legend:{labels:{color:"#fff"}}}
+    }
   });
 }
 
@@ -516,6 +752,7 @@ function renderResumen(){
   document.getElementById("totalUsd").textContent=usd(totalUsd);
   document.getElementById("totalArs").textContent=money(totalArs);
   document.getElementById("gananciaMinorista").textContent=money(venta-totalArs);
+  document.getElementById("totalGastos").textContent=money(gastos.reduce((a,g)=>a+g.montoArs,0));
 }
 
 function renderPedidos(){
@@ -672,6 +909,7 @@ function activarRealtime(){
     .on("postgres_changes",{event:"*",schema:"public",table:"importb2b_orders",filter:`owner_id=eq.${currentUser.id}`},()=>cargarTodo())
     .on("postgres_changes",{event:"*",schema:"public",table:"importb2b_order_items",filter:`owner_id=eq.${currentUser.id}`},()=>cargarTodo())
     .on("postgres_changes",{event:"*",schema:"public",table:"importb2b_margins",filter:`owner_id=eq.${currentUser.id}`},()=>cargarTodo())
+    .on("postgres_changes",{event:"*",schema:"public",table:"importb2b_expenses",filter:`owner_id=eq.${currentUser.id}`},()=>cargarTodo())
     .subscribe();
 }
 
@@ -684,6 +922,7 @@ function renderAll(){
   renderPrecios("mayorista6");
   renderPrecios("mayorista12");
   renderPrecios("mayorista36");
+  renderGastos();
 }
 
 (async()=>{
