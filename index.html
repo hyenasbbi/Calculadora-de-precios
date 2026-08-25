@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>IMPORTB2B - Gestión Online</title>
+<meta name="theme-color" content="#111214">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
@@ -162,6 +166,7 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
   <div class="logo">IMPORT<span>B2B</span></div>
   <div class="userbox">
     <span id="userEmail"></span>
+    <button id="pushBtn" class="btn dark small" onclick="activarNotificaciones()">🔔 Notificaciones</button>
     <button class="btn dark small" onclick="logout()">Salir</button>
   </div>
 </header>
@@ -189,6 +194,10 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
   </div>
 </div>
 
+<div id="pushNotice" class="notice hidden" style="margin-bottom:14px">
+  <strong>Notificaciones:</strong> <span id="pushNoticeText"></span>
+</div>
+
 <div class="drop" id="margenesBox">
   <div class="drop-head" onclick="toggleDrop('margenesBox')">
     <strong>Márgenes por categoría</strong><span class="badge">Editar</span>
@@ -209,18 +218,39 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
     <strong>Nuevo pedido</strong><span class="badge">Desplegar</span>
   </div>
   <div class="drop-body">
-    <div class="grid">
-      <div><label>Fecha</label><input type="date" id="fechaPedido"></div>
-      <div><label>Dólar</label><input type="number" id="dolarNuevo" value="1480"></div>
-      <div><label>Categoría</label><select id="categoriaNuevo"></select></div>
-      <div><label>Producto</label><input id="productoNuevo" placeholder="Ej: Argentina 2006"></div>
-      <div><label>Detalle</label><input id="detalleNuevo" placeholder="Ej: Messi"></div>
-      <div><label>Costo USD real</label><input type="number" step="0.01" id="costoUsdNuevo"></div>
-      <div><label>Costo USD original (opcional)</label><input type="number" step="0.01" id="originalUsdNuevo"></div>
-      <div><label>Cantidad</label><input type="number" id="cantidadNuevo" value="1"></div>
+
+    <div class="panel" style="margin:0 0 14px;padding:14px">
+      <h3 style="margin-bottom:10px">1. Datos generales y envío</h3>
+      <div class="grid">
+        <div><label>Fecha</label><input type="date" id="fechaPedido"></div>
+        <div><label>Cotización USDT del pedido</label><input type="number" id="dolarNuevo" value="1480" oninput="actualizarResumenTemporal()"></div>
+        <div><label>Costo total del envío</label><input type="number" step="0.01" id="envioNuevo" value="0" oninput="actualizarResumenTemporal()"></div>
+        <div>
+          <label>Moneda en la que pagaste el envío</label>
+          <select id="monedaEnvioNuevo" onchange="actualizarResumenTemporal()">
+            <option value="USDT">USDT</option>
+            <option value="ARS">ARS</option>
+          </select>
+        </div>
+      </div>
+      <div id="envioConversionInfo" class="notice" style="margin:10px 0 0">
+        El envío se distribuirá automáticamente entre todas las unidades cargadas en este pedido.
+      </div>
     </div>
-    <div class="actions"><button class="btn green" onclick="agregarTemporal()">Agregar al pedido</button></div>
-    <h3 style="margin-top:16px">Pedido en carga</h3>
+
+    <div class="panel" style="margin:0;padding:14px">
+      <h3 style="margin-bottom:10px">2. Cargar productos</h3>
+      <div class="grid">
+        <div><label>Categoría</label><select id="categoriaNuevo"></select></div>
+        <div><label>Producto</label><input id="productoNuevo" placeholder="Ej: Argentina 2006"></div>
+        <div><label>Detalle</label><input id="detalleNuevo" placeholder="Ej: Messi"></div>
+        <div><label>Costo proveedor USDT por unidad</label><input type="number" step="0.01" id="costoProveedorNuevo" placeholder="Ej: 18"></div>
+        <div><label>Cantidad</label><input type="number" id="cantidadNuevo" value="1"></div>
+      </div>
+      <div class="actions"><button class="btn green" onclick="agregarTemporal()">Agregar al pedido</button></div>
+    </div>
+
+    <h3 style="margin-top:18px">Pedido en carga</h3>
     <div id="pedidoTemporal"></div>
     <div class="actions"><button class="btn danger" onclick="finalizarPedido()">Finalizar pedido</button></div>
   </div>
@@ -440,6 +470,142 @@ function toggleDrop(id){document.getElementById(id).classList.toggle("active")}
 function setToday(){document.getElementById("fechaPedido").value=new Date().toISOString().slice(0,10)}
 function cargarCategorias(){document.getElementById("categoriaNuevo").innerHTML=categorias.map(c=>`<option>${esc(c)}</option>`).join("")}
 
+
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function isStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function urlBase64ToUint8Array(base64String){
+  const padding="=".repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  const rawData=atob(base64);
+  return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));
+}
+
+async function registrarServiceWorker(){
+  if(!("serviceWorker" in navigator))return null;
+  try{
+    return await navigator.serviceWorker.register("./sw.js",{scope:"./"});
+  }catch(e){
+    console.error("SW error",e);
+    return null;
+  }
+}
+
+async function actualizarEstadoPush(){
+  const btn=document.getElementById("pushBtn");
+  const notice=document.getElementById("pushNotice");
+  const text=document.getElementById("pushNoticeText");
+  if(!btn||!notice||!text)return;
+
+  if(!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)){
+    btn.textContent="🔕 No compatible";
+    btn.disabled=true;
+    notice.classList.remove("hidden");
+    text.textContent="Este navegador no admite Web Push.";
+    return;
+  }
+
+  if(isIOS() && !isStandalone()){
+    btn.textContent="🔔 Instalar app";
+    notice.classList.remove("hidden");
+    text.textContent="En iPhone: Compartir → Añadir a pantalla de inicio. Abrí IMPORTB2B desde el ícono y luego activá las notificaciones.";
+    return;
+  }
+
+  const reg=await navigator.serviceWorker.ready.catch(()=>null);
+  const sub=reg ? await reg.pushManager.getSubscription().catch(()=>null) : null;
+
+  if(Notification.permission==="granted" && sub){
+    btn.textContent="🔔 Activadas";
+    btn.classList.add("green");
+    notice.classList.add("hidden");
+  }else if(Notification.permission==="denied"){
+    btn.textContent="🔕 Bloqueadas";
+    notice.classList.remove("hidden");
+    text.textContent="Las notificaciones están bloqueadas para esta app. Debés habilitarlas desde los ajustes del dispositivo/navegador.";
+  }else{
+    btn.textContent="🔔 Activar";
+    btn.classList.remove("green");
+    notice.classList.remove("hidden");
+    text.textContent="Activá las notificaciones para recibir un aviso cuando un pedido quede PARA RETIRAR.";
+  }
+}
+
+async function activarNotificaciones(){
+  if(isIOS() && !isStandalone()){
+    alert("En iPhone primero agregá IMPORTB2B a la pantalla de inicio: Compartir → Añadir a pantalla de inicio. Después abrila desde ese ícono.");
+    return;
+  }
+
+  if(!currentUser){
+    alert("Primero iniciá sesión.");
+    return;
+  }
+
+  const reg=await registrarServiceWorker();
+  if(!reg){
+    alert("No se pudo iniciar el servicio de notificaciones.");
+    return;
+  }
+
+  const permission=await Notification.requestPermission();
+  if(permission!=="granted"){
+    await actualizarEstadoPush();
+    return;
+  }
+
+  const {data:cfg,error:cfgErr}=await sb.functions.invoke("importb2b-push-config");
+  if(cfgErr || !cfg?.publicKey){
+    alert("No se pudo obtener la configuración de notificaciones.");
+    return;
+  }
+
+  let sub=await reg.pushManager.getSubscription();
+  if(!sub){
+    sub=await reg.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:urlBase64ToUint8Array(cfg.publicKey)
+    });
+  }
+
+  const j=sub.toJSON();
+  const {error}=await sb.from("importb2b_push_subscriptions").upsert({
+    owner_id:currentUser.id,
+    endpoint:j.endpoint,
+    p256dh:j.keys?.p256dh,
+    auth:j.keys?.auth,
+    user_agent:navigator.userAgent,
+    active:true,
+    updated_at:new Date().toISOString()
+  },{onConflict:"owner_id,endpoint"});
+
+  if(error){
+    alert("No se pudo guardar este dispositivo: "+error.message);
+    return;
+  }
+
+  await actualizarEstadoPush();
+
+  const {data:test,error:testErr}=await sb.functions.invoke("importb2b-send-push",{
+    body:{
+      title:"✅ Notificaciones activadas",
+      body:"IMPORTB2B ya puede avisarte cuando un pedido esté para retirar.",
+      url:"./#seguimiento",
+      tag:"importb2b-test"
+    }
+  });
+
+  if(testErr || !test?.ok){
+    alert("La suscripción quedó guardada, pero la notificación de prueba no pudo enviarse.");
+  }
+}
+
 async function login(){
   const email=document.getElementById("loginEmail").value.trim();
   const password=document.getElementById("loginPassword").value;
@@ -468,9 +634,11 @@ async function startApp(){
   setToday();
   document.getElementById("gastoFecha").value=new Date().toISOString().slice(0,10);
   cargarCategorias();
+  await registrarServiceWorker();
   await cargarTodo();
   renderShipmentOrderOptions();
   activarRealtime();
+  await actualizarEstadoPush();
 }
 
 async function cargarTodo(){
@@ -493,6 +661,13 @@ async function cargarPedidos(){
     fecha:o.order_date,
     nota:o.note||"",
     investmentUsd:Number(o.investment_usd||0),
+    merchandiseUsdt:o.merchandise_usdt==null?null:Number(o.merchandise_usdt),
+    shippingInputAmount:o.shipping_input_amount==null?null:Number(o.shipping_input_amount),
+    shippingInputCurrency:o.shipping_input_currency||null,
+    shippingUsdt:o.shipping_usdt==null?null:Number(o.shipping_usdt),
+    usdtRateArs:o.usdt_rate_ars==null?null:Number(o.usdt_rate_ars),
+    totalUnits:o.total_units==null?null:Number(o.total_units),
+    shippingUsdtPerUnit:o.shipping_usdt_per_unit==null?null:Number(o.shipping_usdt_per_unit),
     productos:(items||[]).filter(i=>i.order_id===o.id).map(i=>({
       dbId:i.id,
       categoria:i.category,
@@ -986,68 +1161,78 @@ function agregarTemporal(){
   const categoria=document.getElementById("categoriaNuevo").value;
   const producto=document.getElementById("productoNuevo").value.trim();
   const detalle=document.getElementById("detalleNuevo").value.trim()||"Sin detalle";
-  const costoUsd=Number(document.getElementById("costoUsdNuevo").value);
-  const originalRaw=document.getElementById("originalUsdNuevo").value;
-  const originalUsd=originalRaw===""?null:Number(originalRaw);
+  const costoProveedor=Number(document.getElementById("costoProveedorNuevo").value);
   const dolar=Number(document.getElementById("dolarNuevo").value);
   const cantidad=Number(document.getElementById("cantidadNuevo").value);
 
-  if(!producto||!(costoUsd>=0)||!(dolar>0)||!(cantidad>0)){alert("Completá producto, costo USD, dólar y cantidad.");return}
-  temporal.push({categoria,producto,detalle,cantidad,originalUsd,costoUsd,dolar,costoArs:costoUsd*dolar});
+  if(!producto || !(costoProveedor>=0) || !(dolar>0) || !(cantidad>0)){
+    alert("Completá producto, costo proveedor USDT, cotización y cantidad.");
+    return;
+  }
+
+  temporal.push({
+    categoria,
+    producto,
+    detalle,
+    cantidad,
+    costoUsd:costoProveedor,
+    dolar
+  });
+
   document.getElementById("productoNuevo").value="";
   document.getElementById("detalleNuevo").value="";
-  document.getElementById("costoUsdNuevo").value="";
-  document.getElementById("originalUsdNuevo").value="";
+  document.getElementById("costoProveedorNuevo").value="";
   document.getElementById("cantidadNuevo").value=1;
   renderTemporal();
 }
 
+function calcularResumenTemporal(){
+  const rate=Number(document.getElementById("dolarNuevo")?.value||0);
+  const shippingInput=Number(document.getElementById("envioNuevo")?.value||0);
+  const shippingCurrency=document.getElementById("monedaEnvioNuevo")?.value||"USDT";
+  const units=temporal.reduce((a,i)=>a+Number(i.cantidad||0),0);
+  const merchandise=temporal.reduce((a,i)=>a+Number(i.costoUsd||0)*Number(i.cantidad||0),0);
+  const shippingUsdt=shippingCurrency==="ARS" ? (rate>0?shippingInput/rate:0) : shippingInput;
+  const shippingPerUnit=units>0?shippingUsdt/units:0;
+  const investment=merchandise+shippingUsdt;
+  const investmentArs=rate>0?investment*rate:0;
+  return {rate,shippingInput,shippingCurrency,units,merchandise,shippingUsdt,shippingPerUnit,investment,investmentArs};
+}
+function pintarInfoEnvio(r){
+  const info=document.getElementById("envioConversionInfo");
+  if(!info)return;
+  if(r.shippingCurrency==="ARS"){
+    info.innerHTML=`Envío ingresado: <strong>${money(r.shippingInput)}</strong> · Equivalente al momento del pedido: <strong>${usd(r.shippingUsdt)}</strong>. ${r.units>0?`Distribución actual: <strong>${usd(r.shippingPerUnit)} por unidad</strong> sobre ${r.units} unidades.`:"Se distribuirá cuando cargues las unidades."}`;
+  }else{
+    info.innerHTML=`Envío ingresado: <strong>${usd(r.shippingInput)}</strong>. ${r.units>0?`Distribución actual: <strong>${usd(r.shippingPerUnit)} por unidad</strong> sobre ${r.units} unidades.`:"Se distribuirá cuando cargues las unidades."}`;
+  }
+}
+function actualizarResumenTemporal(){
+  const r=calcularResumenTemporal();
+  pintarInfoEnvio(r);
+  renderTemporal();
+}
 function renderTemporal(){
   const div=document.getElementById("pedidoTemporal");
-  if(!temporal.length){div.innerHTML='<div class="empty">No hay productos cargados.</div>';return}
-  const tUsd=temporal.reduce((a,i)=>a+i.costoUsd*i.cantidad,0);
-  const tArs=temporal.reduce((a,i)=>a+i.costoArs*i.cantidad,0);
-  div.innerHTML=`
-    <div class="table-wrap"><table>
-      <thead><tr><th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>USD</th><th>ARS</th><th></th></tr></thead>
-      <tbody>${temporal.map((i,x)=>`
-        <tr><td>${esc(i.categoria)}</td><td>${esc(i.producto)}</td><td>${esc(i.detalle)}</td><td>${i.cantidad}</td>
-        <td>${usd(i.costoUsd)}</td><td>${money(i.costoArs)}</td>
-        <td><button class="btn danger small" onclick="temporal.splice(${x},1);renderTemporal()">Eliminar</button></td></tr>`).join("")}</tbody>
-    </table></div>
-    <div class="cards" style="margin-top:10px">
-      <div class="card"><span class="label">Pedido USD</span><strong>${usd(tUsd)}</strong></div>
-      <div class="card"><span class="label">Pedido ARS</span><strong>${money(tArs)}</strong></div>
-    </div>`;
+  const r=calcularResumenTemporal();
+  pintarInfoEnvio(r);
+  if(!temporal.length){div.innerHTML=`<div class="empty">No hay productos cargados.</div><div class="cards" style="margin-top:10px"><div class="card"><span class="label">Unidades</span><strong>0</strong></div><div class="card"><span class="label">Mercadería</span><strong>USD 0.00</strong></div><div class="card"><span class="label">Envío USDT</span><strong>${usd(r.shippingUsdt)}</strong></div><div class="card green"><span class="label">Inversión total</span><strong>${usd(r.investment)}</strong></div></div>`;return;}
+  div.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Categoría</th><th>Producto</th><th>Detalle</th><th>Cant.</th><th>Costo proveedor USDT/u.</th><th>Envío devengado/u.</th><th>Costo real USDT/u.</th><th>Costo real ARS/u.</th><th></th></tr></thead><tbody>${temporal.map((i,x)=>{const realUsd=Number(i.costoUsd||0)+r.shippingPerUnit;const realArs=realUsd*r.rate;return `<tr><td>${esc(i.categoria)}</td><td>${esc(i.producto)}</td><td>${esc(i.detalle)}</td><td>${i.cantidad}</td><td>${usd(i.costoUsd)}</td><td>${usd(r.shippingPerUnit)}</td><td><strong>${usd(realUsd)}</strong></td><td><strong>${money(realArs)}</strong></td><td><button class="btn danger small" onclick="temporal.splice(${x},1);renderTemporal()">Eliminar</button></td></tr>`;}).join("")}</tbody></table></div><div class="cards" style="margin-top:10px"><div class="card"><span class="label">Unidades compradas</span><strong>${r.units}</strong></div><div class="card"><span class="label">Mercadería</span><strong>${usd(r.merchandise)}</strong></div><div class="card"><span class="label">Envío USDT</span><strong>${usd(r.shippingUsdt)}</strong></div><div class="card"><span class="label">Envío por unidad</span><strong>${usd(r.shippingPerUnit)}</strong></div><div class="card green"><span class="label">Inversión total</span><strong>${usd(r.investment)}</strong></div><div class="card"><span class="label">Cotización USDT</span><strong>${money(r.rate)}</strong></div><div class="card"><span class="label">Total equivalente ARS</span><strong>${money(r.investmentArs)}</strong></div></div>`;
 }
 
 async function finalizarPedido(){
   if(!temporal.length){alert("Cargá al menos un producto.");return}
   const fecha=document.getElementById("fechaPedido").value;
   if(!fecha){alert("Seleccioná la fecha.");return}
+  const r=calcularResumenTemporal();
+  if(!(r.rate>0)){alert("Ingresá una cotización USDT válida.");return}
   const nextNumber=pedidos.length?Math.max(...pedidos.map(p=>p.id))+1:1;
-  const investment=temporal.reduce((a,i)=>a+i.costoUsd*i.cantidad,0);
-
-  const {data:order,error:oerr}=await sb.from("importb2b_orders").insert({
-    owner_id:currentUser.id,order_number:nextNumber,order_date:fecha,investment_usd:investment
-  }).select("id").single();
+  const {data:order,error:oerr}=await sb.from("importb2b_orders").insert({owner_id:currentUser.id,order_number:nextNumber,order_date:fecha,investment_usd:r.investment,merchandise_usdt:r.merchandise,shipping_input_amount:r.shippingInput,shipping_input_currency:r.shippingCurrency,shipping_usdt:r.shippingUsdt,usdt_rate_ars:r.rate,total_units:r.units,shipping_usdt_per_unit:r.shippingPerUnit}).select("id").single();
   if(oerr){alert("No se pudo crear el pedido: "+oerr.message);return}
-
-  const rows=temporal.map(i=>({
-    owner_id:currentUser.id,order_id:order.id,category:i.categoria,product:i.product,detail:i.detalle,
-    quantity:i.cantidad,original_usd:i.originalUsd,cost_usd:i.costoUsd,dollar_rate:i.dolar,cost_ars:i.costoArs,
-    excluded_from_stock:false
-  }));
+  const rows=temporal.map(i=>{const supplierUsd=Number(i.costoUsd||0);const landedUsd=supplierUsd+r.shippingPerUnit;return {owner_id:currentUser.id,order_id:order.id,category:i.categoria,product:i.producto,detail:i.detalle,quantity:i.cantidad,original_usd:supplierUsd,cost_usd:landedUsd,dollar_rate:r.rate,cost_ars:landedUsd*r.rate,excluded_from_stock:false};});
   const {error:ierr}=await sb.from("importb2b_order_items").insert(rows);
-  if(ierr){
-    await sb.from("importb2b_orders").delete().eq("id",order.id);
-    alert("No se pudieron guardar los productos: "+ierr.message);return;
-  }
-  temporal=[];
-  await cargarPedidos();
-  renderAll();
-  document.getElementById("nuevoPedidoBox").classList.remove("active");
-  alert("Pedido #"+nextNumber+" guardado en la nube.");
+  if(ierr){await sb.from("importb2b_orders").delete().eq("id",order.id);alert("No se pudieron guardar los productos: "+ierr.message);return}
+  temporal=[];document.getElementById("envioNuevo").value="0";document.getElementById("monedaEnvioNuevo").value="USDT";await cargarPedidos();renderAll();document.getElementById("nuevoPedidoBox").classList.remove("active");alert(`Pedido #${nextNumber} guardado. ${r.units} unidades · ${usd(r.investment)} invertidos.`);
 }
 
 function productosStock(){
@@ -1097,6 +1282,8 @@ function renderPedidos(){
     const text=(`#${p.id} ${p.fecha} ${p.nota} ${JSON.stringify(p.productos)}`).toLowerCase();
     if(q&&!text.includes(q))return;
     const totalArs=p.productos.reduce((a,i)=>a+i.costoArs*i.cantidad,0);
+    const units=p.totalUnits??p.productos.reduce((a,i)=>a+i.cantidad,0);
+    const hasShippingData=p.shippingUsdt!=null || p.merchandiseUsdt!=null;
 
     div.innerHTML+=`
       <div class="order" data-id="${p.id}">
@@ -1105,11 +1292,10 @@ function renderPedidos(){
             ${p.nota?`<br><small>${esc(p.nota)}</small>`:""}
             ${renderOrderShipmentBadges(p)}
           </div>
-          <div class="order-badges">
-            <span class="badge">${usd(p.investmentUsd)}</span><span class="badge">${money(totalArs)}</span>
-          </div>
+          <div class="order-badges"><span class="badge">${units} un.</span><span class="badge">${usd(p.investmentUsd)}</span><span class="badge">${money(totalArs)}</span></div>
         </div>
         <div class="order-body">
+          ${hasShippingData?`<div class="cards" style="margin-bottom:12px"><div class="card"><span class="label">Unidades</span><strong>${units}</strong></div><div class="card"><span class="label">Mercadería</span><strong>${usd(p.merchandiseUsdt||0)}</strong></div><div class="card"><span class="label">Envío</span><strong>${usd(p.shippingUsdt||0)}</strong></div><div class="card"><span class="label">Envío/u.</span><strong>${usd(p.shippingUsdtPerUnit||0)}</strong></div><div class="card green"><span class="label">Inversión total</span><strong>${usd(p.investmentUsd)}</strong></div><div class="card"><span class="label">Cotización USDT</span><strong>${p.usdtRateArs?money(p.usdtRateArs):"—"}</strong></div></div>`:""}
           <div class="actions">
             <button class="btn green small" onclick="event.stopPropagation();prepararSeguimientoPedido(${p.dbId})">+ Agregar seguimiento</button>
             <button class="btn danger small" onclick="event.stopPropagation();eliminarPedido(${p.dbId})">Eliminar pedido completo</button>
@@ -1272,6 +1458,7 @@ function renderAll(){
 }
 
 (async()=>{
+  await registrarServiceWorker();
   if(!window.supabase){document.getElementById("loginStatus").textContent="No cargó Supabase. Revisá tu conexión.";return}
   const {data}=await sb.auth.getSession();
   currentUser=data.session?.user||null;

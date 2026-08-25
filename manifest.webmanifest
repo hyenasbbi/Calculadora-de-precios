@@ -1,0 +1,10 @@
+{
+  "name": "IMPORTB2B",
+  "short_name": "IMPORTB2B",
+  "description": "Gestión de pedidos, stock y seguimiento IMPORTB2B",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d0f10",
+  "theme_color": "#111214"
+}
