@@ -124,7 +124,31 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
 .filter-btn{flex:0 0 auto;border:0;border-radius:999px;padding:7px 10px;background:#292c30;color:#fff;font-size:12px;font-weight:700}
 .filter-btn.active{background:var(--red)}
 .order-ships{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+
 .track-inline{font-size:11px;color:var(--muted)}
+.tracking-quickbar{
+  display:flex;gap:10px;align-items:center;justify-content:space-between;
+  background:#151b18;border:1px solid rgba(40,183,107,.45);
+  border-radius:14px;padding:12px 14px;margin-bottom:14px
+}
+.tracking-quickbar .left{display:flex;align-items:center;gap:10px;min-width:0}
+.tracking-quickbar .icon{font-size:26px;line-height:1}
+.tracking-quickbar .title{font-weight:800}
+.tracking-quickbar .sub{font-size:12px;color:var(--muted);margin-top:3px}
+.tracking-quickbar .stats{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.tracking-quickbar .qbadge{padding:6px 9px;border-radius:999px;background:#252a2d;font-size:11px;font-weight:800}
+.tracking-quickbar .qbadge.ready{background:rgba(40,183,107,.18);color:#88efb5}
+.tracking-quickbar .qbadge.transit{background:rgba(77,141,255,.15);color:#9fc0ff}
+.tracking-quickbar .qbadge.none{background:#2b2e33;color:#bbb}
+.tracking-fab{
+  position:fixed;right:18px;bottom:18px;z-index:9999;
+  border:1px solid rgba(40,183,107,.55);border-radius:14px;background:#18231e;
+  color:#fff;min-height:52px;padding:11px 16px;display:flex;align-items:center;gap:9px;
+  font-weight:800;box-shadow:0 8px 28px rgba(0,0,0,.38)
+}
+.tracking-fab.ready{background:#102c1d;border-color:#28b76b}
+.tracking-fab .fab-sub{display:block;font-size:10px;font-weight:500;color:var(--muted);margin-top:2px}
+
 @media(max-width:850px){
   .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
   header{align-items:flex-start}
@@ -143,6 +167,12 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
   .order-head,.drop-head{align-items:flex-start;flex-direction:column}
   .order-badges{justify-content:flex-start}
   table{min-width:680px}
+  .tracking-quickbar{align-items:flex-start;flex-direction:column}
+  .tracking-quickbar .stats{justify-content:flex-start}
+  .tracking-fab{
+    left:12px;right:12px;bottom:12px;width:calc(100% - 24px);
+    justify-content:center;min-height:56px;padding:10px 14px;border-radius:13px
+  }
 }
 </style>
 </head>
@@ -196,6 +226,22 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
 
 <div id="pushNotice" class="notice hidden" style="margin-bottom:14px">
   <strong>Notificaciones:</strong> <span id="pushNoticeText"></span>
+</div>
+
+<div class="tracking-quickbar" id="trackingQuickbar">
+  <div class="left">
+    <div class="icon">📦</div>
+    <div>
+      <div class="title">Seguimiento de pedidos</div>
+      <div class="sub" id="trackingQuickSub">Ver estado y movimientos de tus envíos</div>
+    </div>
+  </div>
+  <div class="stats">
+    <span class="qbadge transit" id="quickTransit">0 en viaje</span>
+    <span class="qbadge" id="quickCenter">0 en centro</span>
+    <span class="qbadge ready" id="quickReady">0 para retirar</span>
+    <button class="btn green small" onclick="openMainTab('seguimiento')">Abrir seguimiento</button>
+  </div>
 </div>
 
 <div class="drop" id="margenesBox">
@@ -319,11 +365,11 @@ td input,td select{min-width:100px;padding:7px;min-height:34px}
 
 <div class="tabs" id="mainTabs">
   <button class="tab-btn active-btn" data-tab="pedidos" onclick="openTab('pedidos',this)">Pedidos</button>
+  <button class="tab-btn" data-tab="seguimiento" onclick="openTab('seguimiento',this)">📦 Seguimiento</button>
   <button class="tab-btn" data-tab="minorista" onclick="openTab('minorista',this)">Minorista</button>
   <button class="tab-btn" data-tab="mayorista6" onclick="openTab('mayorista6',this)">Mayorista 6</button>
   <button class="tab-btn" data-tab="mayorista12" onclick="openTab('mayorista12',this)">Mayorista 12</button>
   <button class="tab-btn" data-tab="mayorista36" onclick="openTab('mayorista36',this)">Mayorista 36</button>
-  <button class="tab-btn" data-tab="seguimiento" onclick="openTab('seguimiento',this)">Seguimiento</button>
   <button class="tab-btn" data-tab="gastos" onclick="openTab('gastos',this)">Gastos</button>
   <button class="tab-btn" data-tab="csv" onclick="openTab('csv',this)">CSV</button>
 </div>
@@ -866,6 +912,45 @@ function shipmentPriority(s){
   return 8;
 }
 
+
+function actualizarAccesosSeguimiento(){
+  const transit=shipments.filter(s=>s.status==="IN_TRANSIT").length;
+  const center=shipments.filter(s=>s.status==="ARRIVED_AT_DISTRIBUTION_CENTER").length;
+  const ready=shipments.filter(s=>s.status==="READY_FOR_PICKUP").length;
+
+  const qt=document.getElementById("quickTransit");
+  const qc=document.getElementById("quickCenter");
+  const qr=document.getElementById("quickReady");
+  const sub=document.getElementById("trackingQuickSub");
+  const fab=document.getElementById("trackingFab");
+  const ftitle=document.getElementById("trackingFabTitle");
+  const fsub=document.getElementById("trackingFabSub");
+
+  if(qt)qt.textContent=`${transit} en viaje`;
+  if(qc)qc.textContent=`${center} en centro`;
+  if(qr)qr.textContent=`${ready} para retirar`;
+
+  if(sub){
+    if(ready>0)sub.textContent=`Tenés ${ready} pedido${ready===1?"":"s"} listo${ready===1?"":"s"} para retirar`;
+    else if(transit||center)sub.textContent=`${transit} en viaje · ${center} en centro`;
+    else sub.textContent="Ver estado y movimientos de tus envíos";
+  }
+
+  if(fab){
+    fab.classList.toggle("ready",ready>0);
+    if(ready>0){
+      ftitle.textContent=`Seguimiento · ${ready} para retirar`;
+      fsub.textContent="Tocar para ver";
+    }else if(transit||center){
+      ftitle.textContent="Seguimiento";
+      fsub.textContent=`${transit} viaje · ${center} centro`;
+    }else{
+      ftitle.textContent="Seguimiento";
+      fsub.textContent="Ver movimientos";
+    }
+  }
+}
+
 function renderShipments(){
   const q=(document.getElementById("buscarSeguimiento")?.value||"").toLowerCase().trim();
 
@@ -873,6 +958,7 @@ function renderShipments(){
   document.getElementById("shipCountCenter").textContent=shipments.filter(s=>s.status==="ARRIVED_AT_DISTRIBUTION_CENTER").length;
   document.getElementById("shipCountReady").textContent=shipments.filter(s=>s.status==="READY_FOR_PICKUP").length;
   document.getElementById("shipCountReceived").textContent=shipments.filter(s=>s.status==="RECEIVED"||s.isReceived).length;
+  actualizarAccesosSeguimiento();
 
   let data=[...shipments].sort((a,b)=>shipmentPriority(a)-shipmentPriority(b));
 
@@ -1465,5 +1551,14 @@ function renderAll(){
   if(currentUser)await startApp();
 })();
 </script>
+
+<button id="trackingFab" class="tracking-fab" type="button" onclick="openMainTab('seguimiento')">
+  <span style="font-size:21px">📦</span>
+  <span>
+    <span id="trackingFabTitle">Seguimiento</span>
+    <span class="fab-sub" id="trackingFabSub">Ver movimientos</span>
+  </span>
+</button>
+
 </body>
 </html>
